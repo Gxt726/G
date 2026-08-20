@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "智慧树自动刷课助手",
+  "version": "1.0.0",
+  "description": "智慧树(知道)平台自动播放视频、自动切换下一集、静音播放、倍速播放辅助工具",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.zhihuishu.com/*",
+    "*://*.zhihuishu.com.cn/*",
+    "*://*.knowbox.cn/*"
+  ],
+  "action": {
+    "default_title": "智慧树自动刷课助手",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.zhihuishu.com/*",
+        "*://*.zhihuishu.com.cn/*",
+        "*://*.knowbox.cn/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}
