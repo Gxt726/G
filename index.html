@@ -165,7 +165,7 @@
             background: linear-gradient(180deg, #4facfe, #43e97b); border-radius: 2px;
         }
         .chart-subtitle { font-size: 11px; color: #8892b0; margin-bottom: 16px; padding-left: 14px; }
-        .chart { width: 100%; }
+        .chart { width: 100%; min-height: 200px; position: relative; }
         .grid-2 { grid-template-columns: 1fr 1fr; }
         .grid-1 { grid-template-columns: 1fr; }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
@@ -526,14 +526,44 @@ const charts = {};
 let currentMapType = 'aqi';
 let currentRankType = 'good';
 let currentDateOffset = 0;
+let mapRegistered = false;
 
-// 统一的 init（dispose 防重复）
+// 安全 init：dispose + 判空 + try/catch + 尺寸保底
 function ensureChart(id) {
-    const el = document.getElementById(id);
-    if (!el) return null;
-    if (charts[id]) { charts[id].dispose(); charts[id] = null; }
-    charts[id] = echarts.init(el);
-    return charts[id];
+    try {
+        const el = document.getElementById(id);
+        if (!el) { console.warn('[ensureChart] DOM not found:', id); return null; }
+        // 强制容器有尺寸（防止被 loading-mask 或父容器 collapse）
+        if (!el.style.height || el.offsetHeight < 20) {
+            el.style.height = el.style.height || '300px';
+        }
+        // 清理残留
+        if (charts[id]) { try { charts[id].dispose(); } catch(e){} charts[id] = null; }
+        // 用 canvas renderer（兼容性更好）
+        charts[id] = echarts.init(el, null, { renderer: 'canvas' });
+        return charts[id];
+    } catch(e) {
+        console.error('[ensureChart] FAILED:', id, e);
+        // 失败时写占位文本让用户知道
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:40px;font-size:13px;">图表加载失败，请查看控制台</div>';
+        return null;
+    }
+}
+
+// 兜底：不依赖外部 GeoJSON 时，用省份中心经纬度画散点图代替地图
+function registerFallbackMap() {
+    // 用一个极简的空 GeoJSON 注册，ECharts map 会退化成散点
+    const fallbackGeo = {
+        type: 'FeatureCollection',
+        features: provinces.map((name, i) => ({
+            type: 'Feature',
+            properties: { name: name, adcode: i + 1 },
+            geometry: { type: 'Point', coordinates: [0, 0] }
+        }))
+    };
+    echarts.registerMap('china', fallbackGeo);
+    mapRegistered = true;
 }
 
 /* ==================== 概览 ==================== */
@@ -563,52 +593,118 @@ function initOverview() {
 
 /* ==================== 地图 ==================== */
 function initMap() {
-    ensureChart('chinaMap');
-    charts.map.on('click', (p) => {
-        if (p.componentType === 'series' && p.name) openProvinceModal(p.name);
-    });
-    renderMap('aqi');
+    try {
+        const c = ensureChart('chinaMap');
+        if (!c) return;
+        // 判断 china 地图是否可用
+        try {
+            // 尝试一个空 setOption，如果地图没注册会抛异常
+            c.setOption({ series: [{ type: 'map', map: 'china', data: [] }] });
+        } catch(e) {
+            console.warn('[initMap] china map not registered, using scatter fallback');
+            renderScatterFallback('aqi');
+            // 绑定点击
+            c.on('click', (p) => { if (p.name) openProvinceModal(p.name); });
+            return;
+        }
+        // 注册成功，绑定点击并渲染
+        c.on('click', (p) => { if (p.componentType === 'series' && p.name) openProvinceModal(p.name); });
+        renderMap('aqi');
+    } catch(e) {
+        console.error('[initMap] FAILED', e);
+        renderScatterFallback('aqi');
+    }
 }
 function switchMap(type, btn) {
     document.querySelectorAll('.map-card .ctrl-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentMapType = type;
-    renderMap(type);
+    if (mapRegistered) {
+        try { renderMap(type); } catch(e) { renderScatterFallback(type); }
+    } else {
+        renderScatterFallback(type);
+    }
 }
 function renderMap(type) {
-    const c = ensureChart('chinaMap');
-    const data = type === 'aqi' ? generateAqiData(currentDateOffset) : generatePollutantData(type, currentDateOffset);
-    const titleMap = { aqi: 'AQI', pm25: 'PM2.5', pm10: 'PM10', o3: 'O₃', no2: 'NO₂', so2: 'SO₂' };
-    
-    c.setOption({
-        tooltip: {
-            trigger: 'item',
-            backgroundColor: 'rgba(15,12,41,0.95)', borderColor: '#4facfe',
-            textStyle: { color: '#e0e0e0', fontSize: 13 },
-            formatter: p => {
-                const v = p.value;
-                const lvl = v ? aqiLevel(v) : null;
-                return `<b style="color:${lvl ? lvl.color : '#ccd6f6'}">${p.name}</b><br/>
-                        ${titleMap[type]}: ${v || '--'} ${lvl ? '· <span style="color:'+lvl.color+'">'+lvl.name+'</span>' : ''}`;
-            }
-        },
-        visualMap: {
-            min: 20, max: 220, left: 16, bottom: 16, calculable: true,
-            textStyle: { color: '#8892b0', fontSize: 11 },
-            inRange: { color: ['#43e97b','#84fab0','#fddb3a','#fa709a','#ff6b6b','#c0392b'] }
-        },
-        series: [{
-            name: titleMap[type], type: 'map', map: 'china', roam: true,
-            label: { show: false },
-            emphasis: {
-                label: { show: true, color: '#fff', fontWeight: 'bold' },
-                itemStyle: { areaColor: '#00f2fe', shadowBlur: 20, shadowColor: 'rgba(0,242,254,0.5)' }
+    try {
+        const c = ensureChart('chinaMap');
+        if (!c) return;
+        const data = type === 'aqi' ? generateAqiData(currentDateOffset) : generatePollutantData(type, currentDateOffset);
+        const titleMap = { aqi: 'AQI', pm25: 'PM2.5', pm10: 'PM10', o3: 'O₃', no2: 'NO₂', so2: 'SO₂' };
+        c.setOption({
+            tooltip: {
+                trigger: 'item',
+                backgroundColor: 'rgba(15,12,41,0.95)', borderColor: '#4facfe',
+                textStyle: { color: '#e0e0e0', fontSize: 13 },
+                formatter: p => {
+                    const v = p.value, lvl = v ? aqiLevel(v) : null;
+                    return `<b style="color:${lvl ? lvl.color : '#ccd6f6'}">${p.name}</b><br/>
+                            ${titleMap[type]}: ${v || '--'} ${lvl ? '· <span style="color:'+lvl.color+'">'+lvl.name+'</span>' : ''}`;
+                }
             },
-            select: { disabled: true },
-            itemStyle: { borderColor: 'rgba(255,255,255,0.2)', borderWidth: 0.5 },
-            data: data
-        }]
-    }, true);
+            visualMap: {
+                min: 20, max: 220, left: 16, bottom: 16, calculable: true,
+                textStyle: { color: '#8892b0', fontSize: 11 },
+                inRange: { color: ['#43e97b','#84fab0','#fddb3a','#fa709a','#ff6b6b','#c0392b'] }
+            },
+            series: [{
+                name: titleMap[type], type: 'map', map: 'china', roam: true,
+                label: { show: false },
+                emphasis: {
+                    label: { show: true, color: '#fff', fontWeight: 'bold' },
+                    itemStyle: { areaColor: '#00f2fe', shadowBlur: 20, shadowColor: 'rgba(0,242,254,0.5)' }
+                },
+                select: { disabled: true },
+                itemStyle: { borderColor: 'rgba(255,255,255,0.2)', borderWidth: 0.5 },
+                data: data
+            }]
+        }, true);
+    } catch(e) {
+        console.error('[renderMap] FAILED', e);
+        renderScatterFallback(type);
+    }
+}
+
+// 兜底散点图（地图 GeoJSON 不可用时）
+function renderScatterFallback(type) {
+    try {
+        const c = ensureChart('chinaMap');
+        if (!c) return;
+        const data = type === 'aqi' ? generateAqiData(currentDateOffset) : generatePollutantData(type, currentDateOffset);
+        const titleMap = { aqi: 'AQI', pm25: 'PM2.5', pm10: 'PM10', o3: 'O₃', no2: 'NO₂', so2: 'SO₂' };
+        // 用模拟经纬度（中国大致范围 73-135°E, 18-54°N）均匀分布各省份
+        const lon = [116,117,121,107,114,112,123,125,126,118,120,117,119,115,117,113,114,113,113,110,
+                     104,106,102,109,104,101,121,111,108,91,106,87,114,113];
+        const lat = [39,39,31,29,38,37,41,43,47,32,30,32,27,28,36,34,30,28,23,20,
+                     30,26,25,34,36,36,25,40,22,29,38,43,22,22];
+        const scatterData = data.map((d,i) => [lon[i] || 100, lat[i] || 35, d.value, d.name]);
+        c.setOption({
+            tooltip: {
+                trigger: 'item', backgroundColor: 'rgba(15,12,41,0.95)', borderColor: '#4facfe',
+                textStyle: { color: '#e0e0e0' },
+                formatter: p => `<b>${p.data[3]}</b><br/>${titleMap[type]}: ${p.data[2]}`
+            },
+            title: {
+                text: '⚠ 地图数据加载中，暂以散点显示',
+                left: 'center', top: 8, textStyle: { color: '#8892b0', fontSize: 12, fontWeight: 'normal' }
+            },
+            visualMap: {
+                min: 20, max: 220, left: 16, bottom: 16, calculable: true,
+                textStyle: { color: '#8892b0', fontSize: 11 },
+                inRange: { color: ['#43e97b','#84fab0','#fddb3a','#fa709a','#ff6b6b'] }
+            },
+            xAxis: { type: 'value', name: '经度', min: 70, max: 140, axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+            yAxis: { type: 'value', name: '纬度', min: 15, max: 55, axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+            series: [{
+                type: 'scatter', data: scatterData,
+                symbolSize: v => Math.max(6, Math.min(30, v[2] / 8)),
+                itemStyle: { borderColor: '#fff', borderWidth: 0.8, opacity: 0.9 },
+                emphasis: { itemStyle: { shadowBlur: 15, shadowColor: 'rgba(0,242,254,0.6)' } }
+            }]
+        }, true);
+    } catch(e) {
+        console.error('[renderScatterFallback] FAILED', e);
+    }
 }
 
 /* ==================== 饼图 ==================== */
@@ -935,9 +1031,11 @@ document.getElementById('provinceModal').addEventListener('click', closeModal);
 
 /* ==================== 控制函数 ==================== */
 function refreshAll() {
-    Object.values(charts).forEach(c => c && c.dispose());
-    charts.map = charts.pie = charts.radar = charts.rank = charts.trend = null;
-    charts.province = charts.scatter = charts.hour = charts.region = null;
+    try {
+        Object.values(charts).forEach(c => { try { c && c.dispose(); } catch(e){} });
+        charts.map = charts.pie = charts.radar = charts.rank = charts.trend = null;
+        charts.province = charts.scatter = charts.hour = charts.region = null;
+    } catch(e) { console.warn('[refreshAll] dispose warn:', e); }
     initAllCharts();
 }
 function toggleFullscreen() {
@@ -969,37 +1067,95 @@ function exportCSV() {
 }
 
 /* ==================== 初始化入口 ==================== */
-function initAllCharts() {
-    initOverview();
-    initMap();
-    initPie();
-    initRadar();
-    initRank();
-    initTrend();
-    initProvinceBar();
-    initScatter();
-    initHour();
-    initRegion();
-    setTimeout(() => Object.values(charts).forEach(c => c && c.resize()), 100);
+// 带 try/catch 隔离的 safeInit：每个图表初始化独立包裹，单图失败不阻断其他
+function safeInit(name, fn) {
+    try {
+        fn();
+        console.log('[OK]', name);
+    } catch(e) {
+        console.error('[FAIL]', name, e);
+    }
 }
 
-// 加载地图后启动
-fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-    .then(res => res.json())
-    .then(geoJson => {
-        echarts.registerMap('china', geoJson);
-        initAllCharts();
-    })
-    .catch(() => initAllCharts());
+function initAllCharts() {
+    safeInit('概览', () => initOverview());
+    safeInit('地图', () => initMap());
+    safeInit('等级饼图', () => initPie());
+    safeInit('污染物雷达', () => initRadar());
+    safeInit('城市排行榜', () => initRank());
+    safeInit('月度趋势+预测', () => initTrend());
+    safeInit('省份对比', () => initProvinceBar());
+    safeInit('散点相关性', () => initScatter());
+    safeInit('24小时变化', () => initHour());
+    safeInit('区域对比', () => initRegion());
+    // 延迟 resize 等 DOM 完全渲染
+    setTimeout(() => {
+        Object.values(charts).forEach(c => { try { c && c.resize(); } catch(e){} });
+    }, 200);
+}
 
-// 关闭加载遮罩
-window.addEventListener('load', () => {
-    setTimeout(() => document.getElementById('loadingMask').classList.add('hidden'), 600);
-});
+// 多源兜底加载地图 GeoJSON
+const MAP_SOURCES = [
+    'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
+    'https://geo.datav.aliyun.com/areas_v3/bound/100000.json',
+    'https://cdn.jsdelivr.net/gh/apache/echarts-website@asf-site/examples/data/asset/geo/china.json'
+];
 
-// resize
+function loadGeoJson() {
+    return new Promise((resolve) => {
+        let idx = 0;
+        function tryNext() {
+            if (idx >= MAP_SOURCES.length) {
+                console.warn('[GeoJSON] 所有源失败，使用散点兜底');
+                resolve(null);
+                return;
+            }
+            const url = MAP_SOURCES[idx++];
+            // 用带超时的 fetch
+            const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const timeout = setTimeout(() => { try { ctrl && ctrl.abort(); } catch(e){} }, 5000);
+            fetch(url, ctrl ? { signal: ctrl.signal } : {})
+                .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+                .then(geo => { clearTimeout(timeout); resolve(geo); })
+                .catch(err => { clearTimeout(timeout); console.warn('[GeoJSON] 源 ' + idx + ' 失败:', err.message); tryNext(); });
+        }
+        tryNext();
+    });
+}
+
+// 启动：DOM ready → 加载地图 → 初始化所有图表
+function boot() {
+    console.log('[BOOT] 开始初始化...');
+    // 先假设地图不可用，initMap 会自动降级
+    loadGeoJson().then(geo => {
+        if (geo) {
+            try {
+                echarts.registerMap('china', geo);
+                mapRegistered = true;
+                console.log('[BOOT] 地图注册成功');
+            } catch(e) {
+                console.warn('[BOOT] registerMap 失败:', e);
+            }
+        } else {
+            registerFallbackMap();
+        }
+    }).finally(() => {
+        try { initAllCharts(); } catch(e) { console.error('[BOOT] initAllCharts 异常:', e); }
+        // 无论成功失败，都关闭 loading
+        setTimeout(() => document.getElementById('loadingMask').classList.add('hidden'), 800);
+    });
+}
+
+// DOM ready 后启动
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+} else {
+    boot();
+}
+
+// resize（只注册一次）
 window.addEventListener('resize', () => {
-    Object.values(charts).forEach(c => c && c.resize());
+    Object.values(charts).forEach(c => { try { c && c.resize(); } catch(e){} });
 });
 
 // 历史回放
