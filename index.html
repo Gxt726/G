@@ -14,705 +14,1021 @@
             min-height: 100vh;
             color: #e0e0e0;
             overflow-x: hidden;
-        }
-
-        /* 顶部标题 */
-        .header {
-            text-align: center;
-            padding: 40px 20px 30px;
             position: relative;
         }
-        .header h1 {
-            font-size: 36px;
-            font-weight: 700;
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
-        .header p {
-            font-size: 14px;
-            color: #8892b0;
-            letter-spacing: 1px;
-        }
-        .header::after {
+        /* 背景粒子 */
+        body::before {
             content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 3px;
-            background: linear-gradient(90deg, #4facfe, #43e97b);
-            border-radius: 3px;
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(79,172,254,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(67,233,123,0.06) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(253,219,58,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        /* 概览卡片 */
+        .page-wrapper { position: relative; z-index: 1; }
+
+        /* ============ 顶部工具栏 ============ */
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 40px; max-width: 1400px; margin: 0 auto;
+        }
+        .toolbar-left { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .toolbar-right { display: flex; gap: 10px; align-items: center; }
+        .date-picker {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            color: #ccd6f6;
+            padding: 6px 14px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+        .date-picker::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+        .tool-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 18px;
+            color: #ccd6f6;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tool-btn:hover { background: rgba(79,172,254,0.2); border-color: #4facfe; }
+        .tool-btn.primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            color: #fff;
+            font-weight: 600;
+        }
+        .time-slider-group {
+            display: flex; gap: 10px; align-items: center;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 6px 14px;
+        }
+        .time-slider-group label { font-size: 12px; color: #8892b0; }
+        .time-slider-group input[type=range] {
+            width: 140px; accent-color: #4facfe; cursor: pointer;
+        }
+        .slider-val { font-size: 12px; color: #4facfe; font-family: monospace; min-width: 40px; }
+
+        /* ============ 标题 ============ */
+        .header { text-align: center; padding: 30px 20px 20px; position: relative; }
+        .header h1 {
+            font-size: 34px; font-weight: 700;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px; margin-bottom: 8px;
+        }
+        .header p { font-size: 13px; color: #8892b0; letter-spacing: 1px; }
+        .header .update-time { font-size: 11px; color: #5a6280; margin-top: 4px; }
+        .header .update-time .dot {
+            display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+            background: #43e97b; margin-right: 6px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(67,233,123,0.7); }
+            50% { box-shadow: 0 0 0 6px rgba(67,233,123,0); }
+        }
+
+        /* ============ 概览卡片 ============ */
         .overview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 30px 40px;
-            max-width: 1400px;
-            margin: 0 auto;
+            display: grid; gap: 16px;
+            padding: 20px 40px; max-width: 1400px; margin: 0 auto;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         }
         .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 20px; text-align: center;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255,255,255,0.08);
             transition: transform 0.3s, box-shadow 0.3s;
+            position: relative; overflow: hidden;
         }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        .stat-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.05));
+            pointer-events: none;
         }
-        .stat-card .label {
-            font-size: 13px;
-            color: #8892b0;
-            margin-bottom: 12px;
-            letter-spacing: 1px;
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.3); }
+        .stat-card .label { font-size: 12px; color: #8892b0; margin-bottom: 10px; letter-spacing: 1px; }
+        .stat-card .value { font-size: 34px; font-weight: 700; font-family: 'DIN', 'Courier New', monospace; }
+        .stat-card .unit { font-size: 13px; color: #8892b0; margin-left: 3px; }
+        .stat-card .trend-badge {
+            position: absolute; top: 10px; right: 10px;
+            font-size: 11px; padding: 2px 8px; border-radius: 10px;
+            font-weight: 600;
         }
-        .stat-card .value {
-            font-size: 36px;
-            font-weight: 700;
-            font-family: 'DIN', monospace;
-        }
-        .stat-card .unit {
-            font-size: 14px;
-            color: #8892b0;
-            margin-left: 4px;
-        }
+        .trend-up { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+        .trend-down { background: rgba(67,233,123,0.15); color: #43e97b; }
         .stat-card.good .value { color: #43e97b; }
         .stat-card.moderate .value { color: #fddb3a; }
         .stat-card.poor .value { color: #fa709a; }
         .stat-card.extreme .value { color: #ff6b6b; }
 
-        /* 主内容区 */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 40px 60px;
-        }
-
-        .chart-section {
-            display: grid;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-
+        /* ============ 主容器 ============ */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 40px 60px; }
+        .chart-section { display: grid; gap: 20px; margin-bottom: 20px; }
         .chart-card {
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 20px;
-            padding: 24px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 18px; padding: 20px;
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255,255,255,0.06);
             transition: box-shadow 0.3s;
+            position: relative;
         }
-        .chart-card:hover {
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        .chart-card:hover { box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+        .chart-card.forecast-card::after {
+            content: 'AI 预测'; position: absolute; top: 16px; right: 16px;
+            font-size: 10px; padding: 3px 10px; border-radius: 10px;
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            color: #fff; font-weight: 600; letter-spacing: 1px;
         }
         .chart-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #ccd6f6;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 16px; font-weight: 600; color: #ccd6f6; margin-bottom: 4px;
+            display: flex; align-items: center; gap: 10px; padding-right: 60px;
         }
         .chart-title::before {
-            content: '';
-            width: 4px;
-            height: 18px;
-            background: linear-gradient(180deg, #4facfe, #43e97b);
-            border-radius: 2px;
+            content: ''; width: 4px; height: 16px;
+            background: linear-gradient(180deg, #4facfe, #43e97b); border-radius: 2px;
         }
-        .chart-subtitle {
-            font-size: 12px;
-            color: #8892b0;
-            margin-bottom: 20px;
-            padding-left: 14px;
-        }
-
-        .chart {
-            width: 100%;
-        }
-
-        /* 布局网格 */
+        .chart-subtitle { font-size: 11px; color: #8892b0; margin-bottom: 16px; padding-left: 14px; }
+        .chart { width: 100%; }
         .grid-2 { grid-template-columns: 1fr 1fr; }
         .grid-1 { grid-template-columns: 1fr; }
-        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .map-card { grid-column: span 2; }
 
-        /* 中国地图大卡片 */
-        .map-card {
-            grid-column: span 2;
-        }
-
-        /* 控件 */
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
+        /* ============ 控件 ============ */
+        .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
         .ctrl-btn {
-            padding: 8px 18px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            color: #ccd6f6;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 6px 14px; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 16px;
+            color: #ccd6f6; font-size: 12px; cursor: pointer; transition: all 0.25s;
         }
         .ctrl-btn:hover, .ctrl-btn.active {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            border-color: transparent;
-            color: #fff;
+            border-color: transparent; color: #fff;
         }
 
-        /* 底部信息 */
+        /* ============ 省份详情弹窗 ============ */
+        .province-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; transition: opacity 0.3s;
+        }
+        .province-modal.show { display: flex; opacity: 1; }
+        .province-modal-content {
+            background: linear-gradient(135deg, #1a1a3e 0%, #2a2a5e 100%);
+            border-radius: 20px; padding: 28px; max-width: 520px; width: 92%;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            position: relative; animation: slideUp 0.35s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(255,255,255,0.1); border: none;
+            color: #ccd6f6; font-size: 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { background: rgba(255,107,107,0.3); color: #fff; }
+        .modal-title {
+            font-size: 22px; font-weight: 700; margin-bottom: 4px;
+            background: linear-gradient(90deg, #4facfe, #43e97b);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .modal-aqi-badge {
+            display: inline-block; padding: 4px 14px; border-radius: 12px;
+            font-size: 13px; font-weight: 600; margin-bottom: 20px;
+        }
+        .modal-pollutant-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+        }
+        .modal-pollutant-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 14px; text-align: center;
+        }
+        .modal-pollutant-item .pname { font-size: 11px; color: #8892b0; margin-bottom: 6px; }
+        .modal-pollutant-item .pval { font-size: 22px; font-weight: 700; font-family: monospace; }
+        .modal-pollutant-item .punit { font-size: 11px; color: #8892b0; }
+        .modal-footer {
+            margin-top: 20px; padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; color: #5a6280;
+        }
+
+        /* ============ 大屏模式 ============ */
+        body.fullscreen-mode .page-wrapper { padding: 0 4%; }
+        body.fullscreen-mode .header h1 { font-size: 48px; }
+        body.fullscreen-mode .overview { grid-template-columns: repeat(4, 1fr); }
+        body.fullscreen-mode .chart { transition: height 0.3s; }
+        body.fullscreen-mode .hide-in-fs { display: none !important; }
+
+        /* ============ 加载动画 ============ */
+        .loading-mask {
+            position: fixed; inset: 0; background: rgba(15,12,41,0.95);
+            z-index: 2000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; gap: 20px;
+            transition: opacity 0.6s;
+        }
+        .loading-mask.hidden { opacity: 0; pointer-events: none; }
+        .loading-spinner {
+            width: 60px; height: 60px; border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #4facfe;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 14px; color: #8892b0; letter-spacing: 2px; }
+
+        /* ============ 底部 ============ */
         .footer {
-            text-align: center;
-            padding: 30px;
-            color: #8892b0;
-            font-size: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center; padding: 30px; color: #8892b0;
+            font-size: 12px; border-top: 1px solid rgba(255,255,255,0.05);
         }
 
+        /* ============ 响应式 ============ */
         @media (max-width: 900px) {
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .map-card { grid-column: span 1; }
-            .header h1 { font-size: 26px; }
-            .overview, .container { padding-left: 20px; padding-right: 20px; }
+            .header h1 { font-size: 24px; }
+            .toolbar, .overview, .container { padding-left: 16px; padding-right: 16px; }
+            .toolbar { flex-direction: column; gap: 12px; }
+            .time-slider-group input[type=range] { width: 100px; }
+            .modal-pollutant-grid { grid-template-columns: repeat(2, 1fr); }
+            body.fullscreen-mode .header h1 { font-size: 28px; }
+        }
+        @media (max-width: 480px) {
+            .stat-card .value { font-size: 26px; }
+            .modal-pollutant-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
+<!-- 加载动画 -->
+<div class="loading-mask" id="loadingMask">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">加载空气质量数据中...</div>
+</div>
+
+<div class="page-wrapper">
+
+<!-- 顶部工具栏 -->
+<div class="toolbar hide-in-fs">
+    <div class="toolbar-left">
+        <div class="time-slider-group">
+            <label>📅 历史回放</label>
+            <input type="range" id="timeSlider" min="1" max="30" value="30">
+            <span class="slider-val" id="sliderLabel">今天</span>
+        </div>
+        <input type="date" class="date-picker" id="datePicker">
+    </div>
+    <div class="toolbar-right">
+        <button class="tool-btn" onclick="toggleFullscreen()">⛶ 大屏模式</button>
+        <button class="tool-btn" onclick="exportCSV()">⬇ 导出数据</button>
+        <button class="tool-btn primary" onclick="refreshAll()">🔄 刷新</button>
+    </div>
+</div>
+
+<!-- 标题 -->
 <div class="header">
     <h1>🌍 全国空气质量数据分析可视化</h1>
     <p>基于多维度实时数据 · 全国339个地级行政区 · AQI / PM2.5 / PM10 / SO₂ / NO₂ / CO / O₃</p>
+    <div class="update-time"><span class="dot"></span> 数据更新时间：<span id="updateTime">--:--</span> · 自动刷新</div>
 </div>
 
-<!-- 概览统计卡片 -->
+<!-- 概览统计 -->
 <div class="overview">
     <div class="stat-card good">
+        <span class="trend-badge trend-down">↓ 8%</span>
         <div class="label">全国平均 AQI</div>
-        <div class="value" id="avgAqi">--</div>
-        <div class="unit">μg/m³</div>
+        <div class="value" id="avgAqi">0</div><span class="unit">μg/m³</span>
     </div>
     <div class="stat-card moderate">
+        <span class="trend-badge trend-up">↑ 3.2%</span>
         <div class="label">优良天数比例</div>
-        <div class="value" id="goodRate">--</div>
-        <div class="unit">%</div>
+        <div class="value" id="goodRate">0</div><span class="unit">%</span>
     </div>
     <div class="stat-card poor">
+        <span class="trend-badge trend-down">↓ 5</span>
         <div class="label">污染城市数</div>
-        <div class="value" id="pollutedCities">--</div>
-        <div class="unit">个</div>
+        <div class="value" id="pollutedCities">0</div><span class="unit">个</span>
     </div>
     <div class="stat-card extreme">
+        <span class="trend-badge trend-down">↓ 0.3</span>
         <div class="label">重点污染物</div>
         <div class="value" id="topPollutant" style="font-size:22px;">PM2.5</div>
-        <div class="unit" id="topPollutantVal">--</div>
+        <span class="unit" id="topPollutantVal">78 μg/m³</span>
     </div>
 </div>
 
 <div class="container">
-    <!-- 第一行：全国地图 + 等级分布饼图 -->
+
+    <!-- Row 1: 地图 + 饼图 + 雷达 -->
     <div class="chart-section grid-2">
         <div class="chart-card map-card">
             <div class="chart-title">全国空气质量 AQI 热力地图</div>
-            <div class="chart-subtitle">颜色深浅代表AQI数值，点击省份查看详情</div>
+            <div class="chart-subtitle">点击省份查看详细污染物数据，可拖动/缩放</div>
             <div class="controls">
                 <button class="ctrl-btn active" onclick="switchMap('aqi', this)">AQI 指数</button>
                 <button class="ctrl-btn" onclick="switchMap('pm25', this)">PM2.5</button>
+                <button class="ctrl-btn" onclick="switchMap('pm10', this)">PM10</button>
                 <button class="ctrl-btn" onclick="switchMap('o3', this)">O₃</button>
                 <button class="ctrl-btn" onclick="switchMap('no2', this)">NO₂</button>
+                <button class="ctrl-btn" onclick="switchMap('so2', this)">SO₂</button>
             </div>
             <div id="chinaMap" class="chart" style="height: 520px;"></div>
         </div>
-        <div class="chart-card">
-            <div class="chart-title">空气质量等级分布</div>
-            <div class="chart-subtitle">全国城市空气质量等级占比分析</div>
-            <div id="levelPie" class="chart" style="height: 240px;"></div>
-            
-            <div class="chart-title" style="margin-top: 20px;">主要污染物雷达图</div>
-            <div class="chart-subtitle">各类污染物平均浓度对比（全国/北京/上海/广州）</div>
-            <div id="pollutantRadar" class="chart" style="height: 240px;"></div>
+        <div style="display:grid; gap:20px;">
+            <div class="chart-card">
+                <div class="chart-title">空气质量等级分布</div>
+                <div class="chart-subtitle">全国城市 AQI 等级占比（优/良/轻度/中度/重度）</div>
+                <div id="levelPie" class="chart" style="height: 220px;"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">主要污染物雷达图</div>
+                <div class="chart-subtitle">全国 vs 北京/上海/广州 六维污染物浓度对比</div>
+                <div id="pollutantRadar" class="chart" style="height: 220px;"></div>
+            </div>
         </div>
     </div>
 
-    <!-- 第二行：城市排行榜 + 时间趋势 -->
+    <!-- Row 2: 排行榜 + 月度趋势 + AI预测 -->
     <div class="chart-section grid-2">
         <div class="chart-card">
             <div class="chart-title">🏆 空气质量排行榜</div>
-            <div class="chart-subtitle">TOP10 最优 vs TOP10 最差城市 AQI 对比</div>
+            <div class="chart-subtitle">TOP10 最优 vs 最差城市 AQI 对比</div>
             <div class="controls">
                 <button class="ctrl-btn active" onclick="switchRank('good', this)">✅ 最优城市</button>
                 <button class="ctrl-btn" onclick="switchRank('bad', this)">⚠️ 最差城市</button>
             </div>
-            <div id="cityRank" class="chart" style="height: 360px;"></div>
+            <div id="cityRank" class="chart" style="height: 340px;"></div>
         </div>
-        <div class="chart-card">
-            <div class="chart-title">📈 AQI 月度变化趋势</div>
-            <div class="chart-subtitle">2025年各月份全国及重点城市AQI走势</div>
-            <div id="trendChart" class="chart" style="height: 360px;"></div>
-        </div>
-    </div>
-
-    <!-- 第三行：省份对比 + 污染物相关性 -->
-    <div class="chart-section grid-2">
-        <div class="chart-card">
-            <div class="chart-title">各省 PM2.5 浓度对比</div>
-            <div class="chart-subtitle">单位：μg/m³，数据来源于各省市监测站</div>
-            <div id="provinceBar" class="chart" style="height: 380px;"></div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-title">污染物相关性散点图</div>
-            <div class="chart-subtitle">PM2.5 与 PM10 浓度散点分布（采样200城市）</div>
-            <div id="scatterChart" class="chart" style="height: 380px;"></div>
+        <div class="chart-card forecast-card">
+            <div class="chart-title">📈 AQI 月度趋势 & 7天预测</div>
+            <div class="chart-subtitle">实线为实际数据，虚线区域为 AI 预测区间</div>
+            <div id="trendChart" class="chart" style="height: 340px;"></div>
         </div>
     </div>
 
-    <!-- 第四行：污染物堆叠 + 日变化 -->
+    <!-- Row 3: 省份对比 + 散点 + 24小时 -->
     <div class="chart-section grid-2">
         <div class="chart-card">
-            <div class="chart-title">24小时污染物浓度变化</div>
-            <div class="chart-subtitle">典型工作日各污染物小时均值走势</div>
-            <div id="hourChart" class="chart" style="height: 320px;"></div>
+            <div class="chart-title">各省 PM2.5 浓度 TOP15</div>
+            <div class="chart-subtitle">颜色映射污染等级 · 单位 μg/m³</div>
+            <div id="provinceBar" class="chart" style="height: 360px;"></div>
         </div>
+        <div style="display:grid; gap:20px;">
+            <div class="chart-card">
+                <div class="chart-title">污染物相关性分析</div>
+                <div class="chart-subtitle">PM2.5 与 PM10 散点分布（采样200城市）</div>
+                <div id="scatterChart" class="chart" style="height: 200px;"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">24小时污染物浓度变化</div>
+                <div class="chart-subtitle">典型工作日双峰模式（早/晚通勤高峰）</div>
+                <div id="hourChart" class="chart" style="height: 200px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: 区域对比 + 污染物构成 -->
+    <div class="chart-section grid-1">
         <div class="chart-card">
-            <div class="chart-title">区域空气质量对比</div>
-            <div class="chart-subtitle">华北 vs 华东 vs 华南 vs 西南 vs 西北 五大区域</div>
+            <div class="chart-title">区域空气质量对比分析</div>
+            <div class="chart-subtitle">华北 vs 华东 vs 华南 vs 西南 vs 西北 · 五大区域核心指标</div>
             <div id="regionChart" class="chart" style="height: 320px;"></div>
         </div>
     </div>
+
 </div>
 
 <div class="footer">
-    © 2026 全国空气质量数据可视化分析 · 蓝桥杯设计作品 · 数据仅供演示参考
+    © 2026 全国空气质量数据可视化分析 · 蓝桥杯设计作品 · 数据基于种子随机模拟 · 仅供演示参考
+</div>
+
+</div>
+
+<!-- 省份详情弹窗 -->
+<div class="province-modal" id="provinceModal">
+    <div class="province-modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-title" id="modalProvinceName">省份</div>
+        <div class="modal-aqi-badge" id="modalAqiBadge" style="background:#43e97b20;color:#43e97b;">AQI -- 优</div>
+        <div class="modal-pollutant-grid" id="modalPollutants"></div>
+        <div class="modal-footer">
+            <span>数据来源：空气质量监测站</span>
+            <span id="modalTimestamp">--</span>
+        </div>
+    </div>
 </div>
 
 <script>
-/* ==================== 数据准备 ==================== */
-
-// 省份中文列表
+/* ==================== 数据层 ==================== */
 const provinces = ['北京市','天津市','上海市','重庆市','河北省','山西省','辽宁省','吉林省','黑龙江省',
     '江苏省','浙江省','安徽省','福建省','江西省','山东省','河南省','湖北省','湖南省','广东省','海南省',
     '四川省','贵州省','云南省','陕西省','甘肃省','青海省','台湾省','内蒙古自治区','广西壮族自治区','西藏自治区',
     '宁夏回族自治区','新疆维吾尔自治区','香港特别行政区','澳门特别行政区'];
 
-// 随机生成数据的种子函数（保证每次刷新数据一致）
 function seededRandom(seed) {
     let x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
 }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function aqiLevel(v) {
+    if (v <= 50) return { name: '优', color: '#43e97b' };
+    if (v <= 100) return { name: '良', color: '#84fab0' };
+    if (v <= 150) return { name: '轻度污染', color: '#fddb3a' };
+    if (v <= 200) return { name: '中度污染', color: '#fa709a' };
+    return { name: '重度污染', color: '#ff6b6b' };
+}
 
-// 生成AQI分布（部分省份较高模拟华北污染较重）
-function generateAqiData() {
+// 季节因子：月份偏移
+function seasonFactor(month) {
+    // 冬季(12,1,2)高，夏季(6,7,8)低
+    if ([0,1,11].includes(month)) return 1.35;
+    if ([2,3,9].includes(month)) return 1.1;
+    if ([4,5,10].includes(month)) return 0.95;
+    return 0.7;
+}
+
+// 基于日期偏移的数据生成
+function generateAqiData(dateOffset) {
     const data = [];
-    const highPollution = ['河北省', '山西省', '山东省', '河南省', '陕西省', '新疆维吾尔自治区'];
-    const goodAir = ['海南省', '福建省', '台湾省', '西藏自治区', '云南省', '四川省'];
+    const today = new Date();
+    const d = new Date(today); d.setDate(d.getDate() - dateOffset);
+    const month = d.getMonth();
+    const sf = seasonFactor(month);
+    
+    const highPollution = ['河北省','山西省','山东省','河南省','陕西省','新疆维吾尔自治区','内蒙古自治区'];
+    const goodAir = ['海南省','福建省','台湾省','西藏自治区','云南省','四川省','香港特别行政区','澳门特别行政区'];
     
     provinces.forEach((p, i) => {
-        let base = 40 + seededRandom(i + 1) * 80;
-        if (highPollution.includes(p)) base += 40 + seededRandom(i * 2) * 30;
-        if (goodAir.includes(p)) base *= 0.5;
-        data.push({ name: p, value: Math.round(base) });
+        let base = (40 + seededRandom(i + 1 + dateOffset * 7) * 80) * sf;
+        if (highPollution.includes(p)) base += (40 + seededRandom(i * 2) * 30) * sf;
+        if (goodAir.includes(p)) base *= 0.55;
+        data.push({ name: p, value: Math.round(clamp(base, 15, 280)) });
     });
     return data;
 }
 
-function generatePollutantData(type) {
-    const aqiData = generateAqiData();
+function generatePollutantData(type, dateOffset) {
+    const aqiData = generateAqiData(dateOffset);
     return aqiData.map(d => {
         let v = d.value;
-        if (type === 'pm25') v = Math.round(d.value * 0.6 + seededRandom(provinces.indexOf(d.name)) * 20);
-        if (type === 'o3') v = Math.round(40 + seededRandom(provinces.indexOf(d.name) + 100) * 80);
-        if (type === 'no2') v = Math.round(20 + seededRandom(provinces.indexOf(d.name) + 200) * 40);
+        if (type === 'pm25') v = Math.round(clamp(d.value * 0.58 + seededRandom(provinces.indexOf(d.name) + dateOffset) * 18, 5, 200));
+        if (type === 'pm10') v = Math.round(clamp(d.value * 0.85 + seededRandom(provinces.indexOf(d.name) + 50 + dateOffset) * 25, 10, 300));
+        if (type === 'o3') v = Math.round(clamp(40 + seededRandom(provinces.indexOf(d.name) + 100 + dateOffset) * 80, 20, 180));
+        if (type === 'no2') v = Math.round(clamp(20 + seededRandom(provinces.indexOf(d.name) + 200 + dateOffset) * 40, 8, 100));
+        if (type === 'so2') v = Math.round(clamp(8 + seededRandom(provinces.indexOf(d.name) + 300 + dateOffset) * 25, 2, 60));
         return { name: d.name, value: v };
     });
 }
 
-// 生成城市数据
 const cities = {
-    'good': [
-        '三亚', '海口', '舟山', '龙岩', '福州', '厦门', '泉州', '宁德', '普洱', '临沧',
-        '迪庆', '三亚', '深圳', '珠海', '湛江', '茂名', '北海', '防城港', '钦州', '贵港'
-    ],
-    'bad': [
-        '石家庄', '太原', '保定', '邯郸', '邢台', '唐山', '洛阳', '咸阳', '渭南', '临汾',
-        '大同', '张家口', '西安', '郑州', '安阳', '新乡', '焦作', '聊城', '德州', '滨州'
-    ]
+    good: ['三亚','海口','舟山','龙岩','福州','厦门','泉州','宁德','普洱','临沧',
+           '迪庆','深圳','珠海','湛江','茂名','北海','防城港','钦州','贵港','安顺'],
+    bad: ['石家庄','太原','保定','邯郸','邢台','唐山','洛阳','咸阳','渭南','临汾',
+          '大同','张家口','西安','郑州','安阳','新乡','焦作','聊城','德州','滨州']
 };
-
-function generateCityData(type) {
+function generateCityData(type, dateOffset) {
     const list = cities[type];
+    const sf = seasonFactor(new Date().getMonth());
     return list.map((c, i) => {
-        if (type === 'good') {
-            return { name: c, value: Math.round(20 + seededRandom(i + 50) * 30) };
-        } else {
-            return { name: c, value: Math.round(120 + seededRandom(i + 60) * 100) };
-        }
+        if (type === 'good') return { name: c, value: Math.round(clamp(20 + seededRandom(i + 50 + dateOffset) * 30 * sf * 0.7, 10, 80)) };
+        return { name: c, value: Math.round(clamp((120 + seededRandom(i + 60 + dateOffset) * 100) * sf, 60, 280)) };
     });
 }
 
-/* ==================== 初始化图表 ==================== */
-
+/* ==================== 图表实例管理 ==================== */
 const charts = {};
-const palette = ['#4facfe', '#43e97b', '#fddb3a', '#fa709a', '#ff6b6b', '#00f2fe', '#a18cd1'];
+let currentMapType = 'aqi';
+let currentRankType = 'good';
+let currentDateOffset = 0;
 
-// 加载中国地图 GeoJSON
-fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
-    .then(res => res.json())
-    .then(geoJson => {
-        echarts.registerMap('china', geoJson);
-        initCharts();
-    })
-    .catch(() => {
-        // 备用方案：使用简化地图数据
-        initCharts();
-    });
-
-function initCharts() {
-    initOverview();
-    initMap('aqi');
-    initPie();
-    initRadar();
-    initRank('good');
-    initTrend();
-    initProvinceBar();
-    initScatter();
-    initHour();
-    initRegion();
-
-    window.addEventListener('resize', () => {
-        Object.values(charts).forEach(c => c && c.resize());
-    });
+// 统一的 init（dispose 防重复）
+function ensureChart(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    if (charts[id]) { charts[id].dispose(); charts[id] = null; }
+    charts[id] = echarts.init(el);
+    return charts[id];
 }
 
-/* 概览数字 */
+/* ==================== 概览 ==================== */
+function animateNumber(el, target, suffix = '', decimals = 0) {
+    const start = parseFloat(el.textContent) || 0;
+    const duration = 800;
+    const t0 = performance.now();
+    function step(t) {
+        const p = Math.min(1, (t - t0) / duration);
+        const ease = 1 - Math.pow(1 - p, 3);
+        const val = start + (target - start) * ease;
+        el.textContent = decimals > 0 ? val.toFixed(decimals) : Math.round(val);
+        if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
 function initOverview() {
-    const aqiData = generateAqiData();
+    const aqiData = generateAqiData(currentDateOffset);
     const avg = Math.round(aqiData.reduce((s, d) => s + d.value, 0) / aqiData.length);
-    document.getElementById('avgAqi').textContent = avg;
-    document.getElementById('goodRate').textContent = (65 + seededRandom(1) * 15).toFixed(1);
-    document.getElementById('pollutedCities').textContent = 82;
-    document.getElementById('topPollutantVal').textContent = '78 μg/m³';
+    animateNumber(document.getElementById('avgAqi'), avg);
+    animateNumber(document.getElementById('goodRate'), 68.5 + seededRandom(currentDateOffset + 1) * 12, '', 1);
+    animateNumber(document.getElementById('pollutedCities'), 75 + Math.round(seededRandom(currentDateOffset + 2) * 20));
+    document.getElementById('topPollutantVal').textContent = Math.round(avg * 0.6) + ' μg/m³';
+    document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
 }
 
-/* 中国地图 */
-function initMap(type) {
-    const container = document.getElementById('chinaMap');
-    charts.map = echarts.init(container);
-    renderMap(type);
+/* ==================== 地图 ==================== */
+function initMap() {
+    ensureChart('chinaMap');
+    charts.map.on('click', (p) => {
+        if (p.componentType === 'series' && p.name) openProvinceModal(p.name);
+    });
+    renderMap('aqi');
 }
 function switchMap(type, btn) {
     document.querySelectorAll('.map-card .ctrl-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    currentMapType = type;
     renderMap(type);
 }
 function renderMap(type) {
-    const data = type === 'aqi' ? generateAqiData() : generatePollutantData(type);
-    const titleMap = { aqi: 'AQI', pm25: 'PM2.5', o3: 'O₃', no2: 'NO₂' };
+    const c = ensureChart('chinaMap');
+    const data = type === 'aqi' ? generateAqiData(currentDateOffset) : generatePollutantData(type, currentDateOffset);
+    const titleMap = { aqi: 'AQI', pm25: 'PM2.5', pm10: 'PM10', o3: 'O₃', no2: 'NO₂', so2: 'SO₂' };
     
-    charts.map.setOption({
+    c.setOption({
         tooltip: {
             trigger: 'item',
-            backgroundColor: 'rgba(15, 12, 41, 0.95)',
-            borderColor: '#4facfe',
-            textStyle: { color: '#e0e0e0' },
-            formatter: p => `<b>${p.name}</b><br/>${titleMap[type]}: ${p.value || '无数据'}`
+            backgroundColor: 'rgba(15,12,41,0.95)', borderColor: '#4facfe',
+            textStyle: { color: '#e0e0e0', fontSize: 13 },
+            formatter: p => {
+                const v = p.value;
+                const lvl = v ? aqiLevel(v) : null;
+                return `<b style="color:${lvl ? lvl.color : '#ccd6f6'}">${p.name}</b><br/>
+                        ${titleMap[type]}: ${v || '--'} ${lvl ? '· <span style="color:'+lvl.color+'">'+lvl.name+'</span>' : ''}`;
+            }
         },
         visualMap: {
-            min: 20, max: 200,
-            left: 20, bottom: 20,
-            textStyle: { color: '#8892b0' },
-            inRange: {
-                color: ['#43e97b', '#84fab0', '#fddb3a', '#fa709a', '#ff6b6b']
-            },
-            calculable: true
+            min: 20, max: 220, left: 16, bottom: 16, calculable: true,
+            textStyle: { color: '#8892b0', fontSize: 11 },
+            inRange: { color: ['#43e97b','#84fab0','#fddb3a','#fa709a','#ff6b6b','#c0392b'] }
         },
         series: [{
-            name: titleMap[type],
-            type: 'map',
-            map: 'china',
-            roam: true,
+            name: titleMap[type], type: 'map', map: 'china', roam: true,
             label: { show: false },
             emphasis: {
-                label: { show: true, color: '#fff' },
-                itemStyle: { areaColor: '#00f2fe' }
+                label: { show: true, color: '#fff', fontWeight: 'bold' },
+                itemStyle: { areaColor: '#00f2fe', shadowBlur: 20, shadowColor: 'rgba(0,242,254,0.5)' }
             },
-            itemStyle: {
-                borderColor: 'rgba(255,255,255,0.2)',
-                borderWidth: 0.5
-            },
+            select: { disabled: true },
+            itemStyle: { borderColor: 'rgba(255,255,255,0.2)', borderWidth: 0.5 },
             data: data
-        }]
-    });
-}
-
-/* 等级分布饼图 */
-function initPie() {
-    charts.pie = echarts.init(document.getElementById('levelPie'));
-    charts.pie.setOption({
-        tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
-        legend: { bottom: 0, textStyle: { color: '#8892b0', fontSize: 12 } },
-        series: [{
-            type: 'pie',
-            radius: ['40%', '70%'],
-            center: ['50%', '45%'],
-            avoidLabelOverlap: false,
-            label: { show: true, color: '#ccd6f6', fontSize: 12, formatter: '{b}\n{d}%' },
-            itemStyle: { borderColor: 'rgba(15,12,41,1)', borderWidth: 3 },
-            data: [
-                { value: 89, name: '优', itemStyle: { color: '#43e97b' } },
-                { value: 156, name: '良', itemStyle: { color: '#84fab0' } },
-                { value: 58, name: '轻度污染', itemStyle: { color: '#fddb3a' } },
-                { value: 28, name: '中度污染', itemStyle: { color: '#fa709a' } },
-                { value: 8, name: '重度污染', itemStyle: { color: '#ff6b6b' } }
-            ]
-        }]
-    });
-}
-
-/* 污染物雷达图 */
-function initRadar() {
-    charts.radar = echarts.init(document.getElementById('pollutantRadar'));
-    
-    const cities = ['全国平均', '北京市', '上海市', '广州市'];
-    const pollutants = ['PM2.5', 'PM10', 'SO₂', 'NO₂', 'CO', 'O₃'];
-    
-    const values = [
-        [78, 112, 15, 42, 1.2, 85],
-        [98, 135, 12, 58, 1.5, 95],
-        [55, 88, 8, 38, 0.9, 78],
-        [48, 72, 5, 32, 0.7, 88]
-    ];
-    
-    charts.radar.setOption({
-        tooltip: { backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
-        legend: { bottom: 0, textStyle: { color: '#8892b0', fontSize: 11 }, itemWidth: 12, itemHeight: 8 },
-        radar: {
-            center: ['50%', '48%'],
-            radius: '62%',
-            indicator: pollutants.map(p => ({ name: p, max: 150 })),
-            axisName: { color: '#8892b0', fontSize: 11 },
-            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
-            splitArea: { areaStyle: { color: ['rgba(255,255,255,0.02)', 'rgba(255,255,255,0.05)'] } },
-            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
-        },
-        series: [{
-            type: 'radar',
-            emphasis: { lineStyle: { width: 3 } },
-            data: cities.map((c, i) => ({
-                name: c,
-                value: values[i],
-                symbol: 'circle',
-                symbolSize: 6,
-                areaStyle: { opacity: 0.15 }
-            }))
-        }]
-    });
-}
-
-/* 城市排行榜 */
-function initRank(type) {
-    charts.rank = echarts.init(document.getElementById('cityRank'));
-    renderRank(type);
-}
-function switchRank(type, btn) {
-    document.querySelectorAll('.chart-card:nth-of-type(3) .ctrl-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderRank(type);
-}
-function renderRank(type) {
-    let data = generateCityData(type);
-    const color = type === 'good' ? '#43e97b' : '#ff6b6b';
-    
-    charts.rank.setOption({
-        grid: { left: 90, right: 30, top: 20, bottom: 30 },
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
-        xAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
-        yAxis: { type: 'category', data: data.map(d => d.name).reverse(), axisLabel: { color: '#ccd6f6' }, axisLine: { show: false }, axisTick: { show: false } },
-        series: [{
-            type: 'bar',
-            data: data.map(d => d.value).reverse(),
-            itemStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                    { offset: 0, color: color + '40' },
-                    { offset: 1, color: color }
-                ]),
-                borderRadius: [0, 6, 6, 0]
-            },
-            barWidth: 14,
-            label: { show: true, position: 'right', color: '#ccd6f6', fontSize: 12, formatter: '{c}' }
         }]
     }, true);
 }
 
-/* 时间趋势图 */
+/* ==================== 饼图 ==================== */
+function initPie() {
+    const c = ensureChart('levelPie');
+    c.setOption({
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { bottom: 0, textStyle: { color: '#8892b0', fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+        series: [{
+            type: 'pie', radius: ['38%', '72%'], center: ['50%', '45%'],
+            animationType: 'scale', animationEasing: 'elasticOut', animationDuration: 800,
+            label: { show: true, color: '#ccd6f6', fontSize: 11, formatter: '{d}%' },
+            labelLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } },
+            itemStyle: { borderColor: 'rgba(15,12,41,1)', borderWidth: 3 },
+            data: [
+                { value: 89, name: '优', itemStyle: { color: '#43e97b' } },
+                { value: 156, name: '良', itemStyle: { color: '#84fab0' } },
+                { value: 58, name: '轻度', itemStyle: { color: '#fddb3a' } },
+                { value: 28, name: '中度', itemStyle: { color: '#fa709a' } },
+                { value: 8, name: '重度', itemStyle: { color: '#ff6b6b' } }
+            ]
+        }]
+    }, true);
+}
+
+/* ==================== 雷达 ==================== */
+function initRadar() {
+    const c = ensureChart('pollutantRadar');
+    c.setOption({
+        tooltip: { backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { bottom: 0, textStyle: { color: '#8892b0', fontSize: 10 }, itemWidth: 12, itemHeight: 8 },
+        radar: {
+            center: ['50%', '48%'], radius: '60%',
+            indicator: [
+                { name: 'PM2.5', max: 150 }, { name: 'PM10', max: 200 },
+                { name: 'SO₂', max: 50 }, { name: 'NO₂', max: 80 },
+                { name: 'CO', max: 2 }, { name: 'O₃', max: 150 }
+            ],
+            axisName: { color: '#8892b0', fontSize: 11 },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } },
+            splitArea: { areaStyle: { color: ['rgba(255,255,255,0.02)','rgba(255,255,255,0.05)'] } },
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } }
+        },
+        series: [{
+            type: 'radar', emphasis: { lineStyle: { width: 3 } },
+            data: [
+                { name: '全国', value: [78,112,15,42,1.2,85], symbol:'circle', symbolSize:5, areaStyle:{opacity:0.12}, itemStyle:{color:'#4facfe'} },
+                { name: '北京', value: [98,135,12,58,1.5,95], symbol:'circle', symbolSize:5, areaStyle:{opacity:0.08}, itemStyle:{color:'#ff6b6b'} },
+                { name: '上海', value: [55,88,8,38,0.9,78], symbol:'circle', symbolSize:5, areaStyle:{opacity:0.08}, itemStyle:{color:'#43e97b'} },
+                { name: '广州', value: [48,72,5,32,0.7,88], symbol:'circle', symbolSize:5, areaStyle:{opacity:0.08}, itemStyle:{color:'#fddb3a'} }
+            ]
+        }]
+    }, true);
+}
+
+/* ==================== 排行榜 ==================== */
+function initRank() { renderRank(currentRankType); }
+function switchRank(type, btn) {
+    const parent = btn.closest('.chart-card');
+    parent.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRankType = type;
+    renderRank(type);
+}
+function renderRank(type) {
+    const data = generateCityData(type, currentDateOffset);
+    const color = type === 'good' ? '#43e97b' : '#ff6b6b';
+    const c = ensureChart('cityRank');
+    c.setOption({
+        grid: { left: 80, right: 40, top: 10, bottom: 20 },
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' },
+            formatter: p => {
+                const v = p[0].value, lvl = aqiLevel(v);
+                return `<b>${p[0].name}</b><br/>AQI: <span style="color:${lvl.color}">${v}</span> · ${lvl.name}`;
+            }
+        },
+        xAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+        yAxis: { type: 'category', data: data.map(d => d.name).reverse(),
+            axisLabel: { color: '#ccd6f6', fontSize: 12 }, axisLine: { show: false }, axisTick: { show: false } },
+        series: [{
+            type: 'bar', data: data.map(d => d.value).reverse(),
+            itemStyle: {
+                color: new echarts.graphic.LinearGradient(0,0,1,0, [
+                    { offset: 0, color: color + '30' }, { offset: 1, color: color }
+                ]),
+                borderRadius: [0,6,6,0]
+            },
+            barWidth: 16,
+            label: { show: true, position: 'right', color: '#ccd6f6', fontSize: 12, formatter: '{c}' },
+            animationDuration: 1000
+        }]
+    }, true);
+}
+
+/* ==================== 月度趋势 + 7天预测 ==================== */
 function initTrend() {
-    charts.trend = echarts.init(document.getElementById('trendChart'));
-    
+    const c = ensureChart('trendChart');
     const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    const forecast = ['0天','1天','2天','3天','4天','5天','6天','7天'];
     
-    // 冬季高，夏季低的典型走势
-    function genSeries(offset) {
+    function genHist(offset) {
         return months.map((_, i) => {
-            const base = i <= 1 || i >= 10 ? 100 : (i >= 4 && i <= 8 ? 55 : 75);
-            return Math.round(base + seededRandom(i + offset) * 20);
+            const base = seasonFactor(i === 11 ? -1 : i) * 75;
+            return Math.round(clamp(base + seededRandom(i + offset) * 18, 30, 180));
         });
     }
     
-    charts.trend.setOption({
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
-        legend: { data: ['全国平均', '北京市', '上海市', '广州市'], textStyle: { color: '#8892b0' }, top: 0 },
+    // 基于历史趋势推算预测值
+    function genForecast(baseOffset) {
+        const hist = genHist(baseOffset);
+        const avgHist = hist.slice(-3).reduce((s,v)=>s+v,0)/3;
+        const trend = hist[hist.length-1] - hist[hist.length-2];
+        return forecast.map((_, i) => Math.round(clamp(hist[hist.length-1] + trend * (i+1) * 0.5 + seededRandom(i+baseOffset+100) * 12, 30, 200)));
+    }
+    
+    const hist1 = genHist(100), hist2 = genHist(200), hist3 = genHist(300), hist4 = genHist(400);
+    const fc1 = genForecast(100), fc2 = genForecast(200), fc3 = genForecast(300), fc4 = genForecast(400);
+    
+    // 构造带预测的 series
+    function buildSeries(name, color, hist, fc) {
+        const allData = [...hist, null, ...fc];
+        const upper = fc.map(v => Math.round(v + 15 + seededRandom(v) * 10));
+        const lower = fc.map(v => Math.round(v - 10 - seededRandom(v + 1) * 5));
+        return { name, color, allData, upper, lower };
+    }
+    
+    const s1 = buildSeries('全国','#4facfe',hist1,fc1);
+    const s2 = buildSeries('北京','#ff6b6b',hist2,fc2);
+    const s3 = buildSeries('上海','#43e97b',hist3,fc3);
+    const s4 = buildSeries('广州','#fddb3a',hist4,fc4);
+    
+    // 组合 xAxis: 12月 + 预测分隔 + 7天预测
+    const xData = [...months, '', ...forecast];
+    
+    c.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { data: ['全国','北京','上海','广州'], textStyle: { color: '#8892b0' }, top: 0, itemWidth: 20, itemHeight: 2 },
         grid: { left: 50, right: 30, top: 40, bottom: 30 },
-        xAxis: { type: 'category', data: months, axisLabel: { color: '#8892b0' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-        yAxis: { type: 'value', name: 'AQI', nameTextStyle: { color: '#8892b0' }, axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        xAxis: {
+            type: 'category', data: xData,
+            axisLabel: { color: '#8892b0', fontSize: 11, formatter: v => v === '' ? '' : v },
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+            splitLine: { show: false }
+        },
+        yAxis: { type: 'value', name: 'AQI', nameTextStyle: { color: '#8892b0' },
+            axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
         series: [
-            { name: '全国平均', type: 'line', smooth: true, data: genSeries(100), lineStyle: { width: 3, color: '#4facfe' }, itemStyle: { color: '#4facfe' }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0, color:'rgba(79,172,254,0.3)'},{offset:1, color:'rgba(79,172,254,0)'}]) } },
-            { name: '北京市', type: 'line', smooth: true, data: genSeries(200), lineStyle: { width: 2, color: '#ff6b6b' }, itemStyle: { color: '#ff6b6b' } },
-            { name: '上海市', type: 'line', smooth: true, data: genSeries(300), lineStyle: { width: 2, color: '#43e97b' }, itemStyle: { color: '#43e97b' } },
-            { name: '广州市', type: 'line', smooth: true, data: genSeries(400), lineStyle: { width: 2, color: '#fddb3a' }, itemStyle: { color: '#fddb3a' } }
+            // 预测置信区间（以全国为例，灰色带）
+            { name: 'AI 置信区间', type: 'line', data: [null,...Array(12).fill(null),...s1.upper],
+                lineStyle: { opacity: 0 }, symbol: 'none', stack: 'conf',
+                areaStyle: { color: 'rgba(161,140,209,0.1)' } },
+            { name: 'AI 置信区间', type: 'line', data: [null,...Array(12).fill(null),...s1.lower],
+                lineStyle: { opacity: 0 }, symbol: 'none',
+                areaStyle: { color: 'rgba(15,12,41,1)' } },
+            
+            { name: '全国', type: 'line', smooth: true, data: s1.allData,
+                lineStyle: { width: 3, color: s1.color }, itemStyle: { color: s1.color },
+                areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[
+                    { offset:0, color:'rgba(79,172,254,0.3)' }, { offset:1, color:'rgba(79,172,254,0)' }
+                ])},
+                markLine: { silent: true, symbol: 'none',
+                    lineStyle: { color: 'rgba(161,140,209,0.5)', type: 'dashed' },
+                    data: [{ xAxis: 12 }]
+                }
+            },
+            { name: '北京', type: 'line', smooth: true, data: s2.allData,
+                lineStyle: { width: 2, color: s2.color, type: 'solid' }, itemStyle: { color: s2.color } },
+            { name: '上海', type: 'line', smooth: true, data: s3.allData,
+                lineStyle: { width: 2, color: s3.color }, itemStyle: { color: s3.color } },
+            { name: '广州', type: 'line', smooth: true, data: s4.allData,
+                lineStyle: { width: 2, color: s4.color }, itemStyle: { color: s4.color } }
         ]
-    });
+    }, true);
 }
 
-/* 省份PM2.5对比 */
+/* ==================== 省份对比 ==================== */
 function initProvinceBar() {
-    charts.province = echarts.init(document.getElementById('provinceBar'));
+    const c = ensureChart('provinceBar');
+    const barData = provinces.map((p, i) => ({
+        name: p.replace(/省|市|自治区|特别行政区|壮族|回族|维吾尔/g,''),
+        value: Math.round(clamp(30 + seededRandom(i * 7 + currentDateOffset * 3) * 90, 10, 180))
+    })).sort((a, b) => b.value - a.value).slice(0, 15);
     
-    // 取前15个省份
-    const barData = provinces.slice(0, 15).map((p, i) => {
-        return { name: p.replace(/省|市|自治区|特别行政区|壮族|回族|维吾尔/g, ''), value: Math.round(30 + seededRandom(i * 7 + 10) * 90) };
-    }).sort((a, b) => b.value - a.value);
-    
-    charts.province.setOption({
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
-        grid: { left: 100, right: 30, top: 10, bottom: 30 },
-        xAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
-        yAxis: { type: 'category', data: barData.map(d => d.name).reverse(), axisLabel: { color: '#ccd6f6', fontSize: 11 }, axisLine: { show: false }, axisTick: { show: false } },
+    c.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' } },
+        grid: { left: 80, right: 40, top: 10, bottom: 20 },
+        xAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+        yAxis: { type: 'category', data: barData.map(d => d.name).reverse(),
+            axisLabel: { color: '#ccd6f6', fontSize: 11 }, axisLine: { show: false }, axisTick: { show: false } },
         series: [{
-            type: 'bar',
-            data: barData.map(d => d.value).reverse(),
+            type: 'bar', data: barData.map(d => d.value).reverse(),
             itemStyle: {
-                color: (p) => {
+                color: p => {
                     const v = p.value;
                     if (v < 50) return '#43e97b';
                     if (v < 75) return '#fddb3a';
                     if (v < 100) return '#fa709a';
                     return '#ff6b6b';
                 },
-                borderRadius: [0, 4, 4, 0]
+                borderRadius: [0,4,4,0]
             },
-            barWidth: 12
+            barWidth: 12,
+            label: { show: true, position: 'right', color: '#ccd6f6', fontSize: 10 }
         }]
-    });
+    }, true);
 }
 
-/* 散点图 */
+/* ==================== 散点 ==================== */
 function initScatter() {
-    charts.scatter = echarts.init(document.getElementById('scatterChart'));
-    
+    const c = ensureChart('scatterChart');
     const data = [];
     for (let i = 0; i < 200; i++) {
-        const pm25 = 10 + seededRandom(i * 3) * 180;
+        const pm25 = 10 + seededRandom(i * 3 + currentDateOffset) * 180;
         const pm10 = pm25 * 1.3 + seededRandom(i * 5) * 30;
         data.push([Math.round(pm25), Math.round(pm10)]);
     }
-    
-    charts.scatter.setOption({
-        tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' }, formatter: p => `PM2.5: ${p.value[0]}<br/>PM10: ${p.value[1]}` },
-        grid: { left: 50, right: 30, top: 30, bottom: 40 },
-        xAxis: { name: 'PM2.5 (μg/m³)', nameTextStyle: { color: '#8892b0' }, type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
-        yAxis: { name: 'PM10 (μg/m³)', nameTextStyle: { color: '#8892b0' }, type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+    c.setOption({
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' },
+            formatter: p => `PM2.5: ${p.value[0]} μg/m³<br/>PM10: ${p.value[1]} μg/m³` },
+        grid: { left: 50, right: 30, top: 20, bottom: 30 },
+        xAxis: { name: 'PM2.5', nameTextStyle: { color: '#8892b0', fontSize: 11 }, type: 'value',
+            axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
+        yAxis: { name: 'PM10', nameTextStyle: { color: '#8892b0', fontSize: 11 }, type: 'value',
+            axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } } },
         series: [{
-            type: 'scatter',
-            data: data,
-            symbolSize: 8,
-            itemStyle: {
-                color: 'rgba(79, 172, 254, 0.6)',
-                borderColor: '#4facfe',
-                borderWidth: 1
-            },
-            emphasis: {
-                itemStyle: { color: '#00f2fe', borderColor: '#fff' }
-            }
+            type: 'scatter', data: data, symbolSize: 6,
+            itemStyle: { color: 'rgba(79,172,254,0.55)', borderColor: '#4facfe', borderWidth: 0.8 }
         }, {
-            name: '趋势线',
-            type: 'line',
-            smooth: true,
-            showSymbol: false,
+            type: 'line', smooth: true, showSymbol: false,
             lineStyle: { color: '#ff6b6b', width: 2, type: 'dashed' },
-            data: [[10, 25], [60, 80], [120, 155], [190, 240]]
+            data: [[10,25],[50,78],[100,145],[150,210],[190,265]]
         }]
-    });
+    }, true);
 }
 
-/* 24小时变化 */
+/* ==================== 24小时 ==================== */
 function initHour() {
-    charts.hour = echarts.init(document.getElementById('hourChart'));
-    
+    const c = ensureChart('hourChart');
     const hours = Array.from({ length: 24 }, (_, i) => i + ':00');
-    
-    // 典型的双峰模式
-    function genHourSeries(base, peakOffset) {
+    function genSeries(base, offset) {
         return hours.map((_, i) => {
-            // 早高峰7-9点，晚高峰17-19点
             let peak = 0;
             if (i >= 7 && i <= 9) peak = 25;
             if (i >= 17 && i <= 19) peak = 35;
-            let val = base + peak + seededRandom(i + peakOffset) * 10;
-            return Math.round(val);
+            return Math.round(base + peak + seededRandom(i + offset) * 10);
         });
     }
-    
-    charts.hour.setOption({
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
-        legend: { data: ['PM2.5', 'NO₂', 'O₃', 'CO'], textStyle: { color: '#8892b0' }, top: 0 },
-        grid: { left: 50, right: 30, top: 40, bottom: 30 },
-        xAxis: { type: 'category', data: hours, axisLabel: { color: '#8892b0', fontSize: 10 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-        yAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+    c.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { data: ['PM2.5','NO₂','O₃','CO'], textStyle: { color: '#8892b0', fontSize: 10 }, top: 0 },
+        grid: { left: 40, right: 20, top: 30, bottom: 24 },
+        xAxis: { type: 'category', data: hours, axisLabel: { color: '#8892b0', fontSize: 9 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
+        yAxis: { type: 'value', axisLabel: { color: '#8892b0', fontSize: 10 }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.04)' } } },
         series: [
-            { name: 'PM2.5', type: 'line', smooth: true, data: genHourSeries(45, 1), itemStyle: { color: '#4facfe' }, lineStyle: { width: 2 } },
-            { name: 'NO₂', type: 'line', smooth: true, data: genHourSeries(25, 50), itemStyle: { color: '#fddb3a' }, lineStyle: { width: 2 } },
-            { name: 'O₃', type: 'line', smooth: true, data: genHourSeries(70, 100).map((v, i) => Math.max(40, 90 + Math.sin(i/24*Math.PI*2) * 25 + seededRandom(i+200)*8)), itemStyle: { color: '#43e97b' }, lineStyle: { width: 2 } },
-            { name: 'CO', type: 'line', smooth: true, data: genHourSeries(0.8, 150).map(v => (v/30).toFixed(2)), itemStyle: { color: '#fa709a' }, lineStyle: { width: 2 } }
+            { name: 'PM2.5', type: 'line', smooth: true, data: genSeries(45,1), itemStyle: { color:'#4facfe' }, lineStyle:{width:2} },
+            { name: 'NO₂', type: 'line', smooth: true, data: genSeries(25,50), itemStyle: { color:'#fddb3a' }, lineStyle:{width:2} },
+            { name: 'O₃', type: 'line', smooth: true, data: hours.map((_,i)=>Math.max(40, 90+Math.sin(i/24*Math.PI*2)*25+seededRandom(i+200)*8)), itemStyle: { color:'#43e97b' }, lineStyle:{width:2} },
+            { name: 'CO', type: 'line', smooth: true, data: genSeries(0.8,150).map(v=>(v/30).toFixed(2)), itemStyle: { color:'#fa709a' }, lineStyle:{width:2} }
         ]
-    });
+    }, true);
 }
 
-/* 区域对比 */
+/* ==================== 区域对比 ==================== */
 function initRegion() {
-    charts.region = echarts.init(document.getElementById('regionChart'));
-    
-    const regions = ['华北', '华东', '华南', '西南', '西北'];
-    const pollutants = ['AQI', 'PM2.5', 'PM10', 'NO₂', 'O₃'];
-    
-    charts.region.setOption({
-        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' }, axisPointer: { type: 'shadow' } },
-        legend: { data: regions, textStyle: { color: '#8892b0' }, top: 0 },
+    const c = ensureChart('regionChart');
+    c.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15,12,41,0.95)', textStyle: { color: '#e0e0e0' }, axisPointer: { type: 'shadow' } },
+        legend: { data: ['华北','华东','华南','西南','西北'], textStyle: { color: '#8892b0' }, top: 0, itemWidth: 14, itemHeight: 8 },
         grid: { left: 50, right: 30, top: 40, bottom: 30 },
-        xAxis: { type: 'category', data: pollutants, axisLabel: { color: '#ccd6f6' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
-        yAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        xAxis: { type: 'category', data: ['AQI','PM2.5','PM10','NO₂','O₃'],
+            axisLabel: { color: '#ccd6f6' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.08)' } } },
+        yAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.04)' } } },
         series: [
-            { name: '华北', type: 'bar', data: [120, 85, 125, 48, 90], itemStyle: { color: '#ff6b6b', borderRadius: [4,4,0,0] }, barWidth: 12 },
-            { name: '华东', type: 'bar', data: [78, 52, 82, 38, 88], itemStyle: { color: '#4facfe', borderRadius: [4,4,0,0] }, barWidth: 12 },
-            { name: '华南', type: 'bar', data: [55, 35, 58, 28, 95], itemStyle: { color: '#43e97b', borderRadius: [4,4,0,0] }, barWidth: 12 },
-            { name: '西南', type: 'bar', data: [62, 40, 68, 32, 80], itemStyle: { color: '#fddb3a', borderRadius: [4,4,0,0] }, barWidth: 12 },
-            { name: '西北', type: 'bar', data: [95, 65, 110, 45, 75], itemStyle: { color: '#fa709a', borderRadius: [4,4,0,0] }, barWidth: 12 }
+            { name:'华北', type:'bar', data:[120,85,125,48,90], itemStyle:{color:'#ff6b6b',borderRadius:[4,4,0,0]}, barWidth:12 },
+            { name:'华东', type:'bar', data:[78,52,82,38,88], itemStyle:{color:'#4facfe',borderRadius:[4,4,0,0]}, barWidth:12 },
+            { name:'华南', type:'bar', data:[55,35,58,28,95], itemStyle:{color:'#43e97b',borderRadius:[4,4,0,0]}, barWidth:12 },
+            { name:'西南', type:'bar', data:[62,40,68,32,80], itemStyle:{color:'#fddb3a',borderRadius:[4,4,0,0]}, barWidth:12 },
+            { name:'西北', type:'bar', data:[95,65,110,45,75], itemStyle:{color:'#fa709a',borderRadius:[4,4,0,0]}, barWidth:12 }
         ]
-    });
+    }, true);
 }
+
+/* ==================== 省份详情弹窗 ==================== */
+function openProvinceModal(provinceName) {
+    const aqiData = generateAqiData(currentDateOffset);
+    const row = aqiData.find(d => d.name === provinceName);
+    if (!row) return;
+    
+    const lvl = aqiLevel(row.value);
+    const pm25 = generatePollutantData('pm25', currentDateOffset).find(d => d.name === provinceName)?.value || 0;
+    const pm10 = generatePollutantData('pm10', currentDateOffset).find(d => d.name === provinceName)?.value || 0;
+    const o3 = generatePollutantData('o3', currentDateOffset).find(d => d.name === provinceName)?.value || 0;
+    const no2 = generatePollutantData('no2', currentDateOffset).find(d => d.name === provinceName)?.value || 0;
+    const so2 = generatePollutantData('so2', currentDateOffset).find(d => d.name === provinceName)?.value || 0;
+    
+    document.getElementById('modalProvinceName').textContent = provinceName.replace(/省|市|自治区|特别行政区|壮族|回族|维吾尔/g,'');
+    const badge = document.getElementById('modalAqiBadge');
+    badge.textContent = `AQI ${row.value} · ${lvl.name}`;
+    badge.style.background = lvl.color + '30';
+    badge.style.color = lvl.color;
+    
+    const grid = document.getElementById('modalPollutants');
+    const items = [
+        { name: 'PM2.5', val: pm25, unit: 'μg/m³', color: pm25 > 75 ? '#ff6b6b' : '#4facfe' },
+        { name: 'PM10', val: pm10, unit: 'μg/m³', color: pm10 > 150 ? '#ff6b6b' : '#43e97b' },
+        { name: 'O₃',   val: o3,   unit: 'μg/m³', color: '#43e97b' },
+        { name: 'NO₂',  val: no2,  unit: 'μg/m³', color: '#fddb3a' },
+        { name: 'SO₂',  val: so2,  unit: 'μg/m³', color: '#fa709a' },
+        { name: 'CO',   val: (0.5 + seededRandom(provinces.indexOf(provinceName)) * 1.2).toFixed(2), unit: 'mg/m³', color: '#a18cd1' }
+    ];
+    grid.innerHTML = items.map(it => `
+        <div class="modal-pollutant-item">
+            <div class="pname">${it.name}</div>
+            <div class="pval" style="color:${it.color}">${it.val}</div>
+            <div class="punit">${it.unit}</div>
+        </div>
+    `).join('');
+    
+    document.getElementById('modalTimestamp').textContent = new Date().toLocaleString('zh-CN');
+    document.getElementById('provinceModal').classList.add('show');
+}
+function closeModal() { document.getElementById('provinceModal').classList.remove('show'); }
+document.getElementById('provinceModal').addEventListener('click', closeModal);
+
+/* ==================== 控制函数 ==================== */
+function refreshAll() {
+    Object.values(charts).forEach(c => c && c.dispose());
+    charts.map = charts.pie = charts.radar = charts.rank = charts.trend = null;
+    charts.province = charts.scatter = charts.hour = charts.region = null;
+    initAllCharts();
+}
+function toggleFullscreen() {
+    document.body.classList.toggle('fullscreen-mode');
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(()=>{});
+    } else {
+        document.exitFullscreen?.();
+    }
+    setTimeout(() => Object.values(charts).forEach(c => c && c.resize()), 300);
+}
+function exportCSV() {
+    const aqiData = generateAqiData(currentDateOffset);
+    const header = '省份,AQI,PM2.5,PM10,O3,NO2,SO2\n';
+    const rows = aqiData.map(d => {
+        const p = d.name;
+        const pm25 = generatePollutantData('pm25', currentDateOffset).find(x => x.name === p)?.value || '';
+        const pm10 = generatePollutantData('pm10', currentDateOffset).find(x => x.name === p)?.value || '';
+        const o3   = generatePollutantData('o3',   currentDateOffset).find(x => x.name === p)?.value || '';
+        const no2  = generatePollutantData('no2',  currentDateOffset).find(x => x.name === p)?.value || '';
+        const so2  = generatePollutantData('so2',  currentDateOffset).find(x => x.name === p)?.value || '';
+        return `"${p}",${d.value},${pm25},${pm10},${o3},${no2},${so2}`;
+    }).join('\n');
+    const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `空气质量数据_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+}
+
+/* ==================== 初始化入口 ==================== */
+function initAllCharts() {
+    initOverview();
+    initMap();
+    initPie();
+    initRadar();
+    initRank();
+    initTrend();
+    initProvinceBar();
+    initScatter();
+    initHour();
+    initRegion();
+    setTimeout(() => Object.values(charts).forEach(c => c && c.resize()), 100);
+}
+
+// 加载地图后启动
+fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
+    .then(res => res.json())
+    .then(geoJson => {
+        echarts.registerMap('china', geoJson);
+        initAllCharts();
+    })
+    .catch(() => initAllCharts());
+
+// 关闭加载遮罩
+window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('loadingMask').classList.add('hidden'), 600);
+});
+
+// resize
+window.addEventListener('resize', () => {
+    Object.values(charts).forEach(c => c && c.resize());
+});
+
+// 历史回放
+const slider = document.getElementById('timeSlider');
+const sliderLabel = document.getElementById('sliderLabel');
+slider.addEventListener('input', e => {
+    currentDateOffset = 30 - parseInt(e.target.value);
+    const d = new Date(); d.setDate(d.getDate() - currentDateOffset);
+    sliderLabel.textContent = currentDateOffset === 0 ? '今天' : `${currentDateOffset}天前`;
+    document.getElementById('datePicker').value = d.toISOString().slice(0,10);
+    refreshAll();
+});
+
+// 日期选择
+const datePicker = document.getElementById('datePicker');
+datePicker.valueAsDate = new Date();
+datePicker.addEventListener('change', e => {
+    const target = new Date(e.target.value);
+    const diff = Math.round((new Date() - target) / (1000 * 60 * 60 * 24));
+    currentDateOffset = clamp(diff, 0, 180);
+    slider.value = 30 - Math.min(currentDateOffset, 30);
+    sliderLabel.textContent = currentDateOffset === 0 ? '今天' : `${currentDateOffset}天前`;
+    refreshAll();
+});
+
+// 自动刷新（每60秒更新时间戳和概览）
+setInterval(() => {
+    document.getElementById('updateTime').textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+}, 30000);
 </script>
 
 </body>
