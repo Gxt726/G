@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全国空气质量数据分析可视化 | 蓝桥杯</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        /* 顶部标题 */
+        .header {
+            text-align: center;
+            padding: 40px 20px 30px;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #43e97b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 14px;
+            color: #8892b0;
+            letter-spacing: 1px;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, #4facfe, #43e97b);
+            border-radius: 3px;
+        }
+
+        /* 概览卡片 */
+        .overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: #8892b0;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            font-family: 'DIN', monospace;
+        }
+        .stat-card .unit {
+            font-size: 14px;
+            color: #8892b0;
+            margin-left: 4px;
+        }
+        .stat-card.good .value { color: #43e97b; }
+        .stat-card.moderate .value { color: #fddb3a; }
+        .stat-card.poor .value { color: #fa709a; }
+        .stat-card.extreme .value { color: #ff6b6b; }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px 60px;
+        }
+
+        .chart-section {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: box-shadow 0.3s;
+        }
+        .chart-card:hover {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ccd6f6;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chart-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: linear-gradient(180deg, #4facfe, #43e97b);
+            border-radius: 2px;
+        }
+        .chart-subtitle {
+            font-size: 12px;
+            color: #8892b0;
+            margin-bottom: 20px;
+            padding-left: 14px;
+        }
+
+        .chart {
+            width: 100%;
+        }
+
+        /* 布局网格 */
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        /* 中国地图大卡片 */
+        .map-card {
+            grid-column: span 2;
+        }
+
+        /* 控件 */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .ctrl-btn {
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #ccd6f6;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .ctrl-btn:hover, .ctrl-btn.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        /* 底部信息 */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #8892b0;
+            font-size: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 900px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .map-card { grid-column: span 1; }
+            .header h1 { font-size: 26px; }
+            .overview, .container { padding-left: 20px; padding-right: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🌍 全国空气质量数据分析可视化</h1>
+    <p>基于多维度实时数据 · 全国339个地级行政区 · AQI / PM2.5 / PM10 / SO₂ / NO₂ / CO / O₃</p>
+</div>
+
+<!-- 概览统计卡片 -->
+<div class="overview">
+    <div class="stat-card good">
+        <div class="label">全国平均 AQI</div>
+        <div class="value" id="avgAqi">--</div>
+        <div class="unit">μg/m³</div>
+    </div>
+    <div class="stat-card moderate">
+        <div class="label">优良天数比例</div>
+        <div class="value" id="goodRate">--</div>
+        <div class="unit">%</div>
+    </div>
+    <div class="stat-card poor">
+        <div class="label">污染城市数</div>
+        <div class="value" id="pollutedCities">--</div>
+        <div class="unit">个</div>
+    </div>
+    <div class="stat-card extreme">
+        <div class="label">重点污染物</div>
+        <div class="value" id="topPollutant" style="font-size:22px;">PM2.5</div>
+        <div class="unit" id="topPollutantVal">--</div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- 第一行：全国地图 + 等级分布饼图 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card map-card">
+            <div class="chart-title">全国空气质量 AQI 热力地图</div>
+            <div class="chart-subtitle">颜色深浅代表AQI数值，点击省份查看详情</div>
+            <div class="controls">
+                <button class="ctrl-btn active" onclick="switchMap('aqi', this)">AQI 指数</button>
+                <button class="ctrl-btn" onclick="switchMap('pm25', this)">PM2.5</button>
+                <button class="ctrl-btn" onclick="switchMap('o3', this)">O₃</button>
+                <button class="ctrl-btn" onclick="switchMap('no2', this)">NO₂</button>
+            </div>
+            <div id="chinaMap" class="chart" style="height: 520px;"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">空气质量等级分布</div>
+            <div class="chart-subtitle">全国城市空气质量等级占比分析</div>
+            <div id="levelPie" class="chart" style="height: 240px;"></div>
+            
+            <div class="chart-title" style="margin-top: 20px;">主要污染物雷达图</div>
+            <div class="chart-subtitle">各类污染物平均浓度对比（全国/北京/上海/广州）</div>
+            <div id="pollutantRadar" class="chart" style="height: 240px;"></div>
+        </div>
+    </div>
+
+    <!-- 第二行：城市排行榜 + 时间趋势 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card">
+            <div class="chart-title">🏆 空气质量排行榜</div>
+            <div class="chart-subtitle">TOP10 最优 vs TOP10 最差城市 AQI 对比</div>
+            <div class="controls">
+                <button class="ctrl-btn active" onclick="switchRank('good', this)">✅ 最优城市</button>
+                <button class="ctrl-btn" onclick="switchRank('bad', this)">⚠️ 最差城市</button>
+            </div>
+            <div id="cityRank" class="chart" style="height: 360px;"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">📈 AQI 月度变化趋势</div>
+            <div class="chart-subtitle">2025年各月份全国及重点城市AQI走势</div>
+            <div id="trendChart" class="chart" style="height: 360px;"></div>
+        </div>
+    </div>
+
+    <!-- 第三行：省份对比 + 污染物相关性 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card">
+            <div class="chart-title">各省 PM2.5 浓度对比</div>
+            <div class="chart-subtitle">单位：μg/m³，数据来源于各省市监测站</div>
+            <div id="provinceBar" class="chart" style="height: 380px;"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">污染物相关性散点图</div>
+            <div class="chart-subtitle">PM2.5 与 PM10 浓度散点分布（采样200城市）</div>
+            <div id="scatterChart" class="chart" style="height: 380px;"></div>
+        </div>
+    </div>
+
+    <!-- 第四行：污染物堆叠 + 日变化 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card">
+            <div class="chart-title">24小时污染物浓度变化</div>
+            <div class="chart-subtitle">典型工作日各污染物小时均值走势</div>
+            <div id="hourChart" class="chart" style="height: 320px;"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">区域空气质量对比</div>
+            <div class="chart-subtitle">华北 vs 华东 vs 华南 vs 西南 vs 西北 五大区域</div>
+            <div id="regionChart" class="chart" style="height: 320px;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    © 2026 全国空气质量数据可视化分析 · 蓝桥杯设计作品 · 数据仅供演示参考
+</div>
+
+<script>
+/* ==================== 数据准备 ==================== */
+
+// 省份中文列表
+const provinces = ['北京市','天津市','上海市','重庆市','河北省','山西省','辽宁省','吉林省','黑龙江省',
+    '江苏省','浙江省','安徽省','福建省','江西省','山东省','河南省','湖北省','湖南省','广东省','海南省',
+    '四川省','贵州省','云南省','陕西省','甘肃省','青海省','台湾省','内蒙古自治区','广西壮族自治区','西藏自治区',
+    '宁夏回族自治区','新疆维吾尔自治区','香港特别行政区','澳门特别行政区'];
+
+// 随机生成数据的种子函数（保证每次刷新数据一致）
+function seededRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+// 生成AQI分布（部分省份较高模拟华北污染较重）
+function generateAqiData() {
+    const data = [];
+    const highPollution = ['河北省', '山西省', '山东省', '河南省', '陕西省', '新疆维吾尔自治区'];
+    const goodAir = ['海南省', '福建省', '台湾省', '西藏自治区', '云南省', '四川省'];
+    
+    provinces.forEach((p, i) => {
+        let base = 40 + seededRandom(i + 1) * 80;
+        if (highPollution.includes(p)) base += 40 + seededRandom(i * 2) * 30;
+        if (goodAir.includes(p)) base *= 0.5;
+        data.push({ name: p, value: Math.round(base) });
+    });
+    return data;
+}
+
+function generatePollutantData(type) {
+    const aqiData = generateAqiData();
+    return aqiData.map(d => {
+        let v = d.value;
+        if (type === 'pm25') v = Math.round(d.value * 0.6 + seededRandom(provinces.indexOf(d.name)) * 20);
+        if (type === 'o3') v = Math.round(40 + seededRandom(provinces.indexOf(d.name) + 100) * 80);
+        if (type === 'no2') v = Math.round(20 + seededRandom(provinces.indexOf(d.name) + 200) * 40);
+        return { name: d.name, value: v };
+    });
+}
+
+// 生成城市数据
+const cities = {
+    'good': [
+        '三亚', '海口', '舟山', '龙岩', '福州', '厦门', '泉州', '宁德', '普洱', '临沧',
+        '迪庆', '三亚', '深圳', '珠海', '湛江', '茂名', '北海', '防城港', '钦州', '贵港'
+    ],
+    'bad': [
+        '石家庄', '太原', '保定', '邯郸', '邢台', '唐山', '洛阳', '咸阳', '渭南', '临汾',
+        '大同', '张家口', '西安', '郑州', '安阳', '新乡', '焦作', '聊城', '德州', '滨州'
+    ]
+};
+
+function generateCityData(type) {
+    const list = cities[type];
+    return list.map((c, i) => {
+        if (type === 'good') {
+            return { name: c, value: Math.round(20 + seededRandom(i + 50) * 30) };
+        } else {
+            return { name: c, value: Math.round(120 + seededRandom(i + 60) * 100) };
+        }
+    });
+}
+
+/* ==================== 初始化图表 ==================== */
+
+const charts = {};
+const palette = ['#4facfe', '#43e97b', '#fddb3a', '#fa709a', '#ff6b6b', '#00f2fe', '#a18cd1'];
+
+// 加载中国地图 GeoJSON
+fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json')
+    .then(res => res.json())
+    .then(geoJson => {
+        echarts.registerMap('china', geoJson);
+        initCharts();
+    })
+    .catch(() => {
+        // 备用方案：使用简化地图数据
+        initCharts();
+    });
+
+function initCharts() {
+    initOverview();
+    initMap('aqi');
+    initPie();
+    initRadar();
+    initRank('good');
+    initTrend();
+    initProvinceBar();
+    initScatter();
+    initHour();
+    initRegion();
+
+    window.addEventListener('resize', () => {
+        Object.values(charts).forEach(c => c && c.resize());
+    });
+}
+
+/* 概览数字 */
+function initOverview() {
+    const aqiData = generateAqiData();
+    const avg = Math.round(aqiData.reduce((s, d) => s + d.value, 0) / aqiData.length);
+    document.getElementById('avgAqi').textContent = avg;
+    document.getElementById('goodRate').textContent = (65 + seededRandom(1) * 15).toFixed(1);
+    document.getElementById('pollutedCities').textContent = 82;
+    document.getElementById('topPollutantVal').textContent = '78 μg/m³';
+}
+
+/* 中国地图 */
+function initMap(type) {
+    const container = document.getElementById('chinaMap');
+    charts.map = echarts.init(container);
+    renderMap(type);
+}
+function switchMap(type, btn) {
+    document.querySelectorAll('.map-card .ctrl-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMap(type);
+}
+function renderMap(type) {
+    const data = type === 'aqi' ? generateAqiData() : generatePollutantData(type);
+    const titleMap = { aqi: 'AQI', pm25: 'PM2.5', o3: 'O₃', no2: 'NO₂' };
+    
+    charts.map.setOption({
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(15, 12, 41, 0.95)',
+            borderColor: '#4facfe',
+            textStyle: { color: '#e0e0e0' },
+            formatter: p => `<b>${p.name}</b><br/>${titleMap[type]}: ${p.value || '无数据'}`
+        },
+        visualMap: {
+            min: 20, max: 200,
+            left: 20, bottom: 20,
+            textStyle: { color: '#8892b0' },
+            inRange: {
+                color: ['#43e97b', '#84fab0', '#fddb3a', '#fa709a', '#ff6b6b']
+            },
+            calculable: true
+        },
+        series: [{
+            name: titleMap[type],
+            type: 'map',
+            map: 'china',
+            roam: true,
+            label: { show: false },
+            emphasis: {
+                label: { show: true, color: '#fff' },
+                itemStyle: { areaColor: '#00f2fe' }
+            },
+            itemStyle: {
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderWidth: 0.5
+            },
+            data: data
+        }]
+    });
+}
+
+/* 等级分布饼图 */
+function initPie() {
+    charts.pie = echarts.init(document.getElementById('levelPie'));
+    charts.pie.setOption({
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { bottom: 0, textStyle: { color: '#8892b0', fontSize: 12 } },
+        series: [{
+            type: 'pie',
+            radius: ['40%', '70%'],
+            center: ['50%', '45%'],
+            avoidLabelOverlap: false,
+            label: { show: true, color: '#ccd6f6', fontSize: 12, formatter: '{b}\n{d}%' },
+            itemStyle: { borderColor: 'rgba(15,12,41,1)', borderWidth: 3 },
+            data: [
+                { value: 89, name: '优', itemStyle: { color: '#43e97b' } },
+                { value: 156, name: '良', itemStyle: { color: '#84fab0' } },
+                { value: 58, name: '轻度污染', itemStyle: { color: '#fddb3a' } },
+                { value: 28, name: '中度污染', itemStyle: { color: '#fa709a' } },
+                { value: 8, name: '重度污染', itemStyle: { color: '#ff6b6b' } }
+            ]
+        }]
+    });
+}
+
+/* 污染物雷达图 */
+function initRadar() {
+    charts.radar = echarts.init(document.getElementById('pollutantRadar'));
+    
+    const cities = ['全国平均', '北京市', '上海市', '广州市'];
+    const pollutants = ['PM2.5', 'PM10', 'SO₂', 'NO₂', 'CO', 'O₃'];
+    
+    const values = [
+        [78, 112, 15, 42, 1.2, 85],
+        [98, 135, 12, 58, 1.5, 95],
+        [55, 88, 8, 38, 0.9, 78],
+        [48, 72, 5, 32, 0.7, 88]
+    ];
+    
+    charts.radar.setOption({
+        tooltip: { backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { bottom: 0, textStyle: { color: '#8892b0', fontSize: 11 }, itemWidth: 12, itemHeight: 8 },
+        radar: {
+            center: ['50%', '48%'],
+            radius: '62%',
+            indicator: pollutants.map(p => ({ name: p, max: 150 })),
+            axisName: { color: '#8892b0', fontSize: 11 },
+            splitLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } },
+            splitArea: { areaStyle: { color: ['rgba(255,255,255,0.02)', 'rgba(255,255,255,0.05)'] } },
+            axisLine: { lineStyle: { color: 'rgba(255,255,255,0.15)' } }
+        },
+        series: [{
+            type: 'radar',
+            emphasis: { lineStyle: { width: 3 } },
+            data: cities.map((c, i) => ({
+                name: c,
+                value: values[i],
+                symbol: 'circle',
+                symbolSize: 6,
+                areaStyle: { opacity: 0.15 }
+            }))
+        }]
+    });
+}
+
+/* 城市排行榜 */
+function initRank(type) {
+    charts.rank = echarts.init(document.getElementById('cityRank'));
+    renderRank(type);
+}
+function switchRank(type, btn) {
+    document.querySelectorAll('.chart-card:nth-of-type(3) .ctrl-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderRank(type);
+}
+function renderRank(type) {
+    let data = generateCityData(type);
+    const color = type === 'good' ? '#43e97b' : '#ff6b6b';
+    
+    charts.rank.setOption({
+        grid: { left: 90, right: 30, top: 20, bottom: 30 },
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
+        xAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        yAxis: { type: 'category', data: data.map(d => d.name).reverse(), axisLabel: { color: '#ccd6f6' }, axisLine: { show: false }, axisTick: { show: false } },
+        series: [{
+            type: 'bar',
+            data: data.map(d => d.value).reverse(),
+            itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                    { offset: 0, color: color + '40' },
+                    { offset: 1, color: color }
+                ]),
+                borderRadius: [0, 6, 6, 0]
+            },
+            barWidth: 14,
+            label: { show: true, position: 'right', color: '#ccd6f6', fontSize: 12, formatter: '{c}' }
+        }]
+    }, true);
+}
+
+/* 时间趋势图 */
+function initTrend() {
+    charts.trend = echarts.init(document.getElementById('trendChart'));
+    
+    const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    
+    // 冬季高，夏季低的典型走势
+    function genSeries(offset) {
+        return months.map((_, i) => {
+            const base = i <= 1 || i >= 10 ? 100 : (i >= 4 && i <= 8 ? 55 : 75);
+            return Math.round(base + seededRandom(i + offset) * 20);
+        });
+    }
+    
+    charts.trend.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { data: ['全国平均', '北京市', '上海市', '广州市'], textStyle: { color: '#8892b0' }, top: 0 },
+        grid: { left: 50, right: 30, top: 40, bottom: 30 },
+        xAxis: { type: 'category', data: months, axisLabel: { color: '#8892b0' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
+        yAxis: { type: 'value', name: 'AQI', nameTextStyle: { color: '#8892b0' }, axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        series: [
+            { name: '全国平均', type: 'line', smooth: true, data: genSeries(100), lineStyle: { width: 3, color: '#4facfe' }, itemStyle: { color: '#4facfe' }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0, color:'rgba(79,172,254,0.3)'},{offset:1, color:'rgba(79,172,254,0)'}]) } },
+            { name: '北京市', type: 'line', smooth: true, data: genSeries(200), lineStyle: { width: 2, color: '#ff6b6b' }, itemStyle: { color: '#ff6b6b' } },
+            { name: '上海市', type: 'line', smooth: true, data: genSeries(300), lineStyle: { width: 2, color: '#43e97b' }, itemStyle: { color: '#43e97b' } },
+            { name: '广州市', type: 'line', smooth: true, data: genSeries(400), lineStyle: { width: 2, color: '#fddb3a' }, itemStyle: { color: '#fddb3a' } }
+        ]
+    });
+}
+
+/* 省份PM2.5对比 */
+function initProvinceBar() {
+    charts.province = echarts.init(document.getElementById('provinceBar'));
+    
+    // 取前15个省份
+    const barData = provinces.slice(0, 15).map((p, i) => {
+        return { name: p.replace(/省|市|自治区|特别行政区|壮族|回族|维吾尔/g, ''), value: Math.round(30 + seededRandom(i * 7 + 10) * 90) };
+    }).sort((a, b) => b.value - a.value);
+    
+    charts.province.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
+        grid: { left: 100, right: 30, top: 10, bottom: 30 },
+        xAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        yAxis: { type: 'category', data: barData.map(d => d.name).reverse(), axisLabel: { color: '#ccd6f6', fontSize: 11 }, axisLine: { show: false }, axisTick: { show: false } },
+        series: [{
+            type: 'bar',
+            data: barData.map(d => d.value).reverse(),
+            itemStyle: {
+                color: (p) => {
+                    const v = p.value;
+                    if (v < 50) return '#43e97b';
+                    if (v < 75) return '#fddb3a';
+                    if (v < 100) return '#fa709a';
+                    return '#ff6b6b';
+                },
+                borderRadius: [0, 4, 4, 0]
+            },
+            barWidth: 12
+        }]
+    });
+}
+
+/* 散点图 */
+function initScatter() {
+    charts.scatter = echarts.init(document.getElementById('scatterChart'));
+    
+    const data = [];
+    for (let i = 0; i < 200; i++) {
+        const pm25 = 10 + seededRandom(i * 3) * 180;
+        const pm10 = pm25 * 1.3 + seededRandom(i * 5) * 30;
+        data.push([Math.round(pm25), Math.round(pm10)]);
+    }
+    
+    charts.scatter.setOption({
+        tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' }, formatter: p => `PM2.5: ${p.value[0]}<br/>PM10: ${p.value[1]}` },
+        grid: { left: 50, right: 30, top: 30, bottom: 40 },
+        xAxis: { name: 'PM2.5 (μg/m³)', nameTextStyle: { color: '#8892b0' }, type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        yAxis: { name: 'PM10 (μg/m³)', nameTextStyle: { color: '#8892b0' }, type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        series: [{
+            type: 'scatter',
+            data: data,
+            symbolSize: 8,
+            itemStyle: {
+                color: 'rgba(79, 172, 254, 0.6)',
+                borderColor: '#4facfe',
+                borderWidth: 1
+            },
+            emphasis: {
+                itemStyle: { color: '#00f2fe', borderColor: '#fff' }
+            }
+        }, {
+            name: '趋势线',
+            type: 'line',
+            smooth: true,
+            showSymbol: false,
+            lineStyle: { color: '#ff6b6b', width: 2, type: 'dashed' },
+            data: [[10, 25], [60, 80], [120, 155], [190, 240]]
+        }]
+    });
+}
+
+/* 24小时变化 */
+function initHour() {
+    charts.hour = echarts.init(document.getElementById('hourChart'));
+    
+    const hours = Array.from({ length: 24 }, (_, i) => i + ':00');
+    
+    // 典型的双峰模式
+    function genHourSeries(base, peakOffset) {
+        return hours.map((_, i) => {
+            // 早高峰7-9点，晚高峰17-19点
+            let peak = 0;
+            if (i >= 7 && i <= 9) peak = 25;
+            if (i >= 17 && i <= 19) peak = 35;
+            let val = base + peak + seededRandom(i + peakOffset) * 10;
+            return Math.round(val);
+        });
+    }
+    
+    charts.hour.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' } },
+        legend: { data: ['PM2.5', 'NO₂', 'O₃', 'CO'], textStyle: { color: '#8892b0' }, top: 0 },
+        grid: { left: 50, right: 30, top: 40, bottom: 30 },
+        xAxis: { type: 'category', data: hours, axisLabel: { color: '#8892b0', fontSize: 10 }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
+        yAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        series: [
+            { name: 'PM2.5', type: 'line', smooth: true, data: genHourSeries(45, 1), itemStyle: { color: '#4facfe' }, lineStyle: { width: 2 } },
+            { name: 'NO₂', type: 'line', smooth: true, data: genHourSeries(25, 50), itemStyle: { color: '#fddb3a' }, lineStyle: { width: 2 } },
+            { name: 'O₃', type: 'line', smooth: true, data: genHourSeries(70, 100).map((v, i) => Math.max(40, 90 + Math.sin(i/24*Math.PI*2) * 25 + seededRandom(i+200)*8)), itemStyle: { color: '#43e97b' }, lineStyle: { width: 2 } },
+            { name: 'CO', type: 'line', smooth: true, data: genHourSeries(0.8, 150).map(v => (v/30).toFixed(2)), itemStyle: { color: '#fa709a' }, lineStyle: { width: 2 } }
+        ]
+    });
+}
+
+/* 区域对比 */
+function initRegion() {
+    charts.region = echarts.init(document.getElementById('regionChart'));
+    
+    const regions = ['华北', '华东', '华南', '西南', '西北'];
+    const pollutants = ['AQI', 'PM2.5', 'PM10', 'NO₂', 'O₃'];
+    
+    charts.region.setOption({
+        tooltip: { trigger: 'axis', backgroundColor: 'rgba(15, 12, 41, 0.95)', textStyle: { color: '#e0e0e0' }, axisPointer: { type: 'shadow' } },
+        legend: { data: regions, textStyle: { color: '#8892b0' }, top: 0 },
+        grid: { left: 50, right: 30, top: 40, bottom: 30 },
+        xAxis: { type: 'category', data: pollutants, axisLabel: { color: '#ccd6f6' }, axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } } },
+        yAxis: { type: 'value', axisLabel: { color: '#8892b0' }, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } } },
+        series: [
+            { name: '华北', type: 'bar', data: [120, 85, 125, 48, 90], itemStyle: { color: '#ff6b6b', borderRadius: [4,4,0,0] }, barWidth: 12 },
+            { name: '华东', type: 'bar', data: [78, 52, 82, 38, 88], itemStyle: { color: '#4facfe', borderRadius: [4,4,0,0] }, barWidth: 12 },
+            { name: '华南', type: 'bar', data: [55, 35, 58, 28, 95], itemStyle: { color: '#43e97b', borderRadius: [4,4,0,0] }, barWidth: 12 },
+            { name: '西南', type: 'bar', data: [62, 40, 68, 32, 80], itemStyle: { color: '#fddb3a', borderRadius: [4,4,0,0] }, barWidth: 12 },
+            { name: '西北', type: 'bar', data: [95, 65, 110, 45, 75], itemStyle: { color: '#fa709a', borderRadius: [4,4,0,0] }, barWidth: 12 }
+        ]
+    });
+}
+</script>
+
+</body>
+</html>
