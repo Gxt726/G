@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全国空气质量数据分析可视化 | 蓝桥杯</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 加载动画 -->
+<div class="loading-mask" id="loadingMask">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">加载空气质量数据中...</div>
+</div>
+
+<div class="page-wrapper">
+
+<!-- 顶部工具栏 -->
+<div class="toolbar hide-in-fs">
+    <div class="toolbar-left">
+        <div class="time-slider-group">
+            <label>📅 历史回放</label>
+            <input type="range" id="timeSlider" min="1" max="30" value="30">
+            <span class="slider-val" id="sliderLabel">今天</span>
+        </div>
+        <input type="date" class="date-picker" id="datePicker">
+    </div>
+    <div class="toolbar-right">
+        <button class="tool-btn" onclick="toggleFullscreen()">⛶ 大屏模式</button>
+        <button class="tool-btn" onclick="exportCSV()">⬇ 导出数据</button>
+        <button class="tool-btn primary" onclick="refreshAll()">🔄 刷新</button>
+    </div>
+</div>
+
+<!-- 标题 -->
+<div class="header">
+    <h1>🌍 全国空气质量数据分析可视化</h1>
+    <p>基于多维度实时数据 · 全国339个地级行政区 · AQI / PM2.5 / PM10 / SO₂ / NO₂ / CO / O₃</p>
+    <div class="update-time"><span class="dot"></span> 数据更新时间：<span id="updateTime">--:--</span> · 自动刷新</div>
+</div>
+
+<!-- 概览统计 -->
+<div class="overview">
+    <div class="stat-card good">
+        <span class="trend-badge trend-better" id="trendAqi">--</span>
+        <div class="label">全国平均 AQI</div>
+        <div class="value" id="avgAqi">0</div>
+    </div>
+    <div class="stat-card moderate">
+        <span class="trend-badge trend-better" id="trendGood">--</span>
+        <div class="label">优良天数比例</div>
+        <div class="value" id="goodRate">0</div><span class="unit">%</span>
+    </div>
+    <div class="stat-card poor">
+        <span class="trend-badge trend-better" id="trendPolluted">--</span>
+        <div class="label">污染城市数</div>
+        <div class="value" id="pollutedCities">0</div><span class="unit">个</span>
+    </div>
+    <div class="stat-card extreme">
+        <span class="trend-badge trend-better" id="trendTop">--</span>
+        <div class="label">重点污染物</div>
+        <div class="value" id="topPollutant" style="font-size:22px;">PM2.5</div>
+        <span class="unit" id="topPollutantVal">--</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Row 1: 地图 + 饼图 + 雷达 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card map-card">
+            <div class="chart-title">全国空气质量 AQI 热力地图</div>
+            <div class="chart-subtitle">点击省份查看详细污染物数据，可拖动/缩放</div>
+            <div class="controls">
+                <button class="ctrl-btn active" onclick="switchMap('aqi', this)">AQI 指数</button>
+                <button class="ctrl-btn" onclick="switchMap('pm25', this)">PM2.5</button>
+                <button class="ctrl-btn" onclick="switchMap('pm10', this)">PM10</button>
+                <button class="ctrl-btn" onclick="switchMap('o3', this)">O₃</button>
+                <button class="ctrl-btn" onclick="switchMap('no2', this)">NO₂</button>
+                <button class="ctrl-btn" onclick="switchMap('so2', this)">SO₂</button>
+            </div>
+            <div id="chinaMap" class="chart" style="height: 520px;"></div>
+        </div>
+        <div style="display:grid; gap:20px;">
+            <div class="chart-card">
+                <div class="chart-title">空气质量等级分布</div>
+                <div class="chart-subtitle">全国城市 AQI 等级占比（优/良/轻度/中度/重度）</div>
+                <div id="levelPie" class="chart" style="height: 220px;"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">主要污染物雷达图</div>
+                <div class="chart-subtitle">全国 vs 北京/上海/广州 六维污染物浓度对比</div>
+                <div id="pollutantRadar" class="chart" style="height: 220px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: 排行榜 + 月度趋势 + AI预测 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card">
+            <div class="chart-title">🏆 空气质量排行榜</div>
+            <div class="chart-subtitle">TOP10 最优 vs 最差城市 AQI 对比</div>
+            <div class="controls">
+                <button class="ctrl-btn active" onclick="switchRank('good', this)">✅ 最优城市</button>
+                <button class="ctrl-btn" onclick="switchRank('bad', this)">⚠️ 最差城市</button>
+            </div>
+            <div id="cityRank" class="chart" style="height: 340px;"></div>
+        </div>
+        <div class="chart-card forecast-card">
+            <div class="chart-title">📈 AQI 月度趋势 & 7天预测</div>
+            <div class="chart-subtitle">实线为实际数据，虚线区域为 AI 预测区间</div>
+            <div id="trendChart" class="chart" style="height: 340px;"></div>
+        </div>
+    </div>
+
+    <!-- Row 3: 省份对比 + 散点 + 24小时 -->
+    <div class="chart-section grid-2">
+        <div class="chart-card">
+            <div class="chart-title">各省 PM2.5 浓度 TOP15</div>
+            <div class="chart-subtitle">颜色映射污染等级 · 单位 μg/m³</div>
+            <div id="provinceBar" class="chart" style="height: 360px;"></div>
+        </div>
+        <div style="display:grid; gap:20px;">
+            <div class="chart-card">
+                <div class="chart-title">污染物相关性分析</div>
+                <div class="chart-subtitle">各省监测点 PM2.5 与 PM10 散点分布</div>
+                <div id="scatterChart" class="chart" style="height: 200px;"></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-title">24小时污染物浓度变化</div>
+                <div class="chart-subtitle">典型工作日双峰模式（早/晚通勤高峰）</div>
+                <div id="hourChart" class="chart" style="height: 200px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 4: 区域对比 + 污染物构成 -->
+    <div class="chart-section grid-1">
+        <div class="chart-card">
+            <div class="chart-title">区域空气质量对比分析</div>
+            <div class="chart-subtitle">华北 / 东北 / 华东 / 华南 / 西南 / 西北 · 六大区域核心指标均值</div>
+            <div id="regionChart" class="chart" style="height: 320px;"></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer">
+    © 2026 全国空气质量数据可视化分析 · 蓝桥杯设计作品 · 数据基于种子随机模拟 · 仅供演示参考
+</div>
+
+</div>
+
+<!-- 省份详情弹窗 -->
+<div class="province-modal" id="provinceModal">
+    <div class="province-modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div class="modal-title" id="modalProvinceName">省份</div>
+        <div class="modal-aqi-badge" id="modalAqiBadge" style="background:#43e97b20;color:#43e97b;">AQI -- 优</div>
+        <div class="modal-pollutant-grid" id="modalPollutants"></div>
+        <div class="modal-footer">
+            <span>数据来源：空气质量监测站</span>
+            <span id="modalTimestamp">--</span>
+        </div>
+    </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
