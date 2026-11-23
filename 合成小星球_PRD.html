@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>合成小星球 · 商业化小游戏 PRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --primary: #4F46E5;
+    --primary-light: #EEF2FF;
+    --accent: #F59E0B;
+    --bg: #FAFAFA;
+    --text: #1F2937;
+    --text-muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 60px 24px 80px; }
+
+  /* Cover */
+  .cover { text-align: center; padding: 80px 24px 60px; }
+  .cover .tag {
+    display: inline-block;
+    padding: 6px 16px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .cover h1 {
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--primary), #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cover .subtitle {
+    font-size: 18px;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+  .meta {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .meta strong { color: var(--text); font-weight: 500; }
+
+  /* TOC */
+  .toc {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 48px;
+  }
+  .toc h2 { font-size: 16px; margin-bottom: 16px; color: var(--primary); }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 8px; font-size: 14px; }
+  .toc a { color: var(--text); text-decoration: none; transition: color .2s; }
+  .toc a:hover { color: var(--primary); }
+
+  /* Sections */
+  .section {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 48px;
+    margin-bottom: 32px;
+  }
+  .section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--primary-light);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section h2 .num {
+    background: var(--primary);
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 28px 0 14px;
+    color: var(--text);
+  }
+  .section h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: var(--primary);
+  }
+  .section p { margin-bottom: 14px; }
+  .section ul, .section ol { padding-left: 22px; margin-bottom: 14px; }
+  .section li { margin-bottom: 8px; }
+
+  /* Product Contract Card */
+  .contract-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .contract-item {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 16px;
+    border-left: 3px solid var(--primary);
+  }
+  .contract-item .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .contract-item .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-right: 6px;
+  }
+  .tag-p0 { background: #DCFCE7; color: #166534; }
+  .tag-p1 { background: #FEF3C7; color: #92400E; }
+  .tag-assumption { background: #F3F4F6; color: #4B5563; }
+  .tag-tbd { background: #FEE2E2; color: #991B1B; }
+  .tag-ad { background: #DBEAFE; color: #1E40AF; }
+  .tag-share { background: #FCE7F3; color: #9D174D; }
+  .tag-keep { background: #E0E7FF; color: #3730A3; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--bg);
+    font-weight: 600;
+    color: var(--text);
+  }
+  tr:hover td { background: #FAFBFC; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0;
+    padding: 24px;
+    background: var(--bg);
+    border-radius: 12px;
+  }
+  .flow-node {
+    background: white;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .flow-node.ad { border-color: var(--accent); color: var(--accent); }
+  .flow-node.reward { border-color: var(--success); color: var(--success); }
+  .flow-arrow { color: var(--text-muted); font-size: 18px; }
+
+  /* Prototype demo */
+  .demo-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 24px 0;
+    display: flex;
+    justify-content: center;
+  }
+  .phone-frame {
+    width: 320px;
+    height: 580px;
+    background: #0f0f1a;
+    border-radius: 30px;
+    overflow: hidden;
+    border: 3px solid #2a2a4a;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .phone-status-bar {
+    height: 30px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+  }
+  .phone-game-area {
+    height: calc(100% - 30px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Game UI simulation */
+  .game-hud {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+  }
+  .hud-item { color: white; font-size: 13px; }
+  .hud-item strong { font-size: 16px; color: var(--accent); }
+
+  .game-board {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at bottom, #1e3a5f 0%, #0f1626 100%);
+  }
+
+  .planet {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: rgba(255,255,255,0.9);
+    font-size: 10px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+  }
+  .planet-1 { width: 30px; height: 30px; background: radial-gradient(circle at 30% 30%, #94a3b8, #475569); }
+  .planet-2 { width: 40px; height: 40px; background: radial-gradient(circle at 30% 30%, #60a5fa, #2563eb); }
+  .planet-3 { width: 55px; height: 55px; background: radial-gradient(circle at 30% 30%, #fbbf24, #d97706); }
+  .planet-4 { width: 70px; height: 70px; background: radial-gradient(circle at 30% 30%, #a78bfa, #7c3aed); }
+  .planet-5 { width: 90px; height: 90px; background: radial-gradient(circle at 30% 30%, #f87171, #dc2626); }
+
+  .next-planet-indicator {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #60a5fa, #2563eb);
+    box-shadow: 0 0 20px rgba(96,165,250,0.5);
+  }
+
+  .game-bottom {
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ad {
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    color: white;
+  }
+  .btn-ad:hover { transform: translateY(-1px); }
+  .btn-share {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+  }
+
+  /* Demo: Game over modal */
+  .modal {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+  .modal.hidden { display: none; }
+  .modal-content {
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+    border-radius: 20px;
+    padding: 24px;
+    width: 260px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+  }
+  .modal-stat {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .modal-stat strong { color: var(--accent); font-size: 20px; display: block; margin: 4px 0; }
+  .modal-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .modal-btn-primary {
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    color: white;
+  }
+  .modal-btn-secondary {
+    background: rgba(255,255,255,0.1);
+    color: white;
+  }
+  .ad-icon {
+    display: inline-block;
+    width: 16px; height: 16px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+    font-size: 10px;
+    line-height: 16px;
+  }
+
+  /* Demo control buttons */
+  .demo-controls {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+  .demo-controls button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: white;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .demo-controls button:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* ID badges */
+  .req-id {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  /* Metrics card */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .metric-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    border-top: 3px solid var(--primary);
+  }
+  .metric-card .metric-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .metric-card .metric-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .metric-card .metric-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Estimate box */
+  .estimate-box {
+    background: linear-gradient(135deg, #FFF7ED, #FEF3C7);
+    border: 1px solid #FCD34D;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .estimate-box h4 { color: #92400E; margin-top: 0; }
+  .estimate-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #FCD34D;
+    font-size: 14px;
+  }
+  .estimate-row:last-child { border-bottom: none; font-weight: 600; color: #92400E; }
+
+  /* Note blocks */
+  .note {
+    background: var(--bg);
+    border-left: 4px solid var(--primary);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+  }
+  .note-tbd {
+    background: #FEF2F2;
+    border-left-color: var(--danger);
+  }
+  .note-assumption {
+    background: #F3F4F6;
+    border-left-color: var(--text-muted);
+  }
+  .note p:last-child { margin-bottom: 0; }
+
+  /* Section divider */
+  .divider {
+    text-align: center;
+    color: var(--text-muted);
+    margin: 32px 0;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Page break */
+  @media print {
+    body { background: white; }
+    .section { break-inside: avoid; border: none; box-shadow: none; }
+    .cover { padding-top: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Cover -->
+  <div class="cover">
+    <div class="tag">商业化小游戏 · PRD</div>
+    <h1>合成小星球</h1>
+    <p class="subtitle">一款以广告收益为核心的碎片化休闲合成游戏</p>
+    <div class="meta">
+      <span>文档状态：<strong>草稿</strong></span>
+      <span>版本：<strong>v1.0</strong></span>
+      <span>日期：<strong>2026-11-23</strong></span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">背景与目标</a></li>
+      <li><a href="#s2">范围与产品契约</a></li>
+      <li><a href="#s3">核心产品模型</a></li>
+      <li><a href="#s4">功能需求</a>
+        <ol style="padding-left:24px;margin-top:8px;">
+          <li><a href="#s4-1">核心玩法模块 (FR-01)</a></li>
+          <li><a href="#s4-2">持续留存与成长养成 (FR-02)</a></li>
+          <li><a href="#s4-3">激励广告与奖励系统 (FR-03)</a></li>
+          <li><a href="#s4-4">分享传播与邀请 (FR-04)</a></li>
+          <li><a href="#s4-5">游戏结束与复活 (FR-05)</a></li>
+        </ol>
+      </li>
+      <li><a href="#s5">共享规则</a></li>
+      <li><a href="#s6">商业化验证指标与收益测算</a></li>
+      <li><a href="#s7">开放问题</a></li>
+    </ol>
+  </div>
+
+  <!-- Section 1: Background & Goals -->
+  <div class="section" id="s1">
+    <h2><span class="num">1</span> 背景与目标</h2>
+
+    <h3>观察到的问题</h3>
+    <p>广告变现型休闲小游戏市场存在一个普遍矛盾：<strong>想要高广告填充率以提升收益，却又怕过度打断体验导致用户流失</strong>。许多产品要么广告植入生硬、体验割裂，要么过于依赖用户点击触发广告，造成"误触广告-被迫观看"的负循环。</p>
+
+    <h3>我们的产品决策</h3>
+    <p>打造一款以<strong>激励视频广告</strong>为唯一广告形式、以<strong>用户主动选择</strong>为唯一触发方式的合成类小游戏。通过精心设计的"游戏困难时刻"和"奖励诱惑时刻"，让用户出于自身意愿主动选择观看广告换取收益，形成"广告观看 → 游戏奖励 → 更久游玩 → 更多广告机会 → 分享传播"的正向循环。</p>
+
+    <h3>目标（可观测结果）</h3>
+    <ul>
+      <li>用户进入游戏后能在 10 秒内理解核心玩法，30 秒内完成首次合成</li>
+      <li>游戏结束时，至少 40% 的用户主动选择观看广告复活</li>
+      <li>单用户日均广告观看次数 ≥ 2 次，人均广告收益 [TBD] 元</li>
+      <li>分享率 ≥ 15%，带来的新用户占比 [TBD]</li>
+      <li>次日留存 ≥ 25%，7 日留存 ≥ 10%</li>
+    </ul>
+  </div>
+
+  <!-- Section 2: Scope & Product Contract -->
+  <div class="section" id="s2">
+    <h2><span class="num">2</span> 范围与产品契约</h2>
+
+    <h3>产品契约</h3>
+    <div class="contract-grid">
+      <div class="contract-item">
+        <div class="label">主要用户</div>
+        <div class="value">18–35 岁城市上班族/学生，碎片化时间（通勤、午休、排队、睡前 5–15 分钟）玩家</div>
+      </div>
+      <div class="contract-item">
+        <div class="label">用户要完成的事</div>
+        <div class="value">在有限时间内获得轻度娱乐和成就感，通过合成解锁更高等级元素</div>
+      </div>
+      <div class="contract-item">
+        <div class="label">触发条件</div>
+        <div class="value">用户打开小游戏入口，或点击好友分享链接</div>
+      </div>
+      <div class="contract-item">
+        <div class="label">完成条件</div>
+        <div class="value">完成一局游戏、触发广告观看、获得奖励、继续游玩或分享</div>
+      </div>
+      <div class="contract-item">
+        <div class="label">共享对象</div>
+        <div class="value">游戏进度、金币余额、星球图鉴、最高合成等级、分享链接</div>
+      </div>
+      <div class="contract-item">
+        <div class="label">信任基础</div>
+        <div class="value">激励广告明确告知时长与奖励，用户自主选择观看；不强制、不误触</div>
+      </div>
+    </div>
+
+    <h3>P0 最小完整旅程</h3>
+    <div class="flow">
+      <div class="flow-node">用户进入</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">理解玩法 & 开始游戏</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">合成星球获得分数</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">游戏遇到困难</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node ad">主动选择看广告</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node reward">获得奖励</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-node">继续玩或分享</div>
+    </div>
+
+    <h3>范围界定</h3>
+    <table>
+      <tr>
+        <th style="width:120px;">层级</th>
+        <th>内容</th>
+      </tr>
+      <tr>
+        <td><span class="tag tag-p0">P0</span></td>
+        <td>核心合成玩法、激励视频广告（复活/加倍奖励/解锁道具）、金币与道具系统、星球图鉴（收集解锁）、基础分享（成绩/截图分享）、每日签到</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-p1">P1</span></td>
+        <td>关卡目标模式、好友排行榜、限时主题活动、好友间星球互赠、分享得金币奖励</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-assumption">暂不做</span></td>
+        <td>付费内购、多人对战、社交聊天室、复杂剧情、VIP 会员体系</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Section 3: Core Product Model -->
+  <div class="section" id="s3">
+    <h2><span class="num">3</span> 核心产品模型</h2>
+
+    <h3>核心玩法概述</h3>
+    <p><strong>合成小星球</strong>是一款 2D 合成类物理休闲游戏。玩家在一个容器内释放星球，相同等级的星球发生碰撞会合成更高级的星球。游戏目标是合成尽可能高等级的星球，获取高分，最终合成传说中的"终极星球"。</p>
+
+    <div class="note">
+      <p><strong>玩法融合：</strong>合成大西瓜的物理掉落 + 2048 的合成升级逻辑 + 轻度收集养成。物理效果带来视觉快感，升级合成带来成就感，收集解锁提供长期目标。</p>
+    </div>
+
+    <h3>星球等级体系</h3>
+    <table>
+      <tr>
+        <th>等级</th>
+        <th>名称</th>
+        <th>相对体积</th>
+        <th>合成得分</th>
+        <th>收集状态</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>星尘</td>
+        <td>×1.0</td>
+        <td>10</td>
+        <td>初始已解锁</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>小行星</td>
+        <td>×1.3</td>
+        <td>20</td>
+        <td>初始已解锁</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>岩石星</td>
+        <td>×1.7</td>
+        <td>50</td>
+        <td>初始已解锁</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>气态星</td>
+        <td>×2.1</td>
+        <td>100</td>
+        <td>首次合成解锁</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>熔岩星</td>
+        <td>×2.6</td>
+        <td>200</td>
+        <td>首次合成解锁</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>蓝巨星</td>
+        <td>×3.2</td>
+        <td>500</td>
+        <td>首次合成解锁</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>红巨星</td>
+        <td>×3.9</td>
+        <td>1000</td>
+        <td>首次合成解锁</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>中子星</td>
+        <td>×4.7</td>
+        <td>2500</td>
+        <td>首次合成解锁</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>黑洞</td>
+        <td>×5.7</td>
+        <td>5000</td>
+        <td>首次合成解锁</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>终极星</td>
+        <td>×7.0</td>
+        <td>[Assumption, TBD]</td>
+        <td>传说目标</td>
+      </tr>
+    </table>
+
+    <h3>商业化循环模型</h3>
+    <div class="flow">
+      <div class="flow-node">进入游戏</div>
+      <span class="flow-arrow">↻</span>
+      <div class="flow-node">游玩 & 合成</div>
+      <span class="flow-arrow">↓</span>
+      <div class="flow-node ad">观看激励广告</div>
+      <span class="flow-arrow">↓</span>
+      <div class="flow-node reward">获得金币/道具</div>
+      <span class="flow-arrow">↗</span>
+      <div class="flow-node">继续游玩</div>
+      <span class="flow-arrow">↘</span>
+      <div class="flow-node">分享传播</div>
+    </div>
+  </div>
+
+  <!-- Section 4: Functional Requirements -->
+  <div class="section" id="s4">
+    <h2><span class="num">4</span> 功能需求</h2>
+
+    <!-- FR-01: Core Gameplay -->
+    <h3 id="s4-1"><span class="req-id">FR-01</span> 核心玩法模块</h3>
+
+    <h4>目的</h4>
+    <p>让用户在 30 秒内上手，在 3 分钟内获得第一次合成的成就感，形成"再来一局"的冲动。</p>
+
+    <h4>布局</h4>
+    <ul>
+      <li>顶部 HUD：当前分数、金币数量、"下一个星球"预览指示</li>
+      <li>中间主游戏区：一个带物理引擎的容器，星球在其中自由堆叠和合成</li>
+      <li>底部操作区：释放星球按钮、设置按钮</li>
+    </ul>
+
+    <h4>触发与流程</h4>
+    <ol>
+      <li>游戏启动后，系统随机生成当前可释放星球（等级 1–3）</li>
+      <li>用户手指/鼠标点击游戏区某位置，该星球从顶部对应位置释放</li>
+      <li>星球自由下落到容器底部，与其他星球堆叠</li>
+      <li>当两个相同等级的星球碰撞时，合成一个更高等级的星球（体积更大）</li>
+      <li>合成时产生视觉/动画特效，并播放合成音效</li>
+      <li>游戏区顶部有一条"失败线"：任何星球超过此线并保持 3 秒，游戏结束</li>
+    </ol>
+
+    <div class="demo-container">
+      <div class="phone-frame">
+        <div class="phone-status-bar">
+          <span>9:41</span>
+          <span>● ● ●</span>
+        </div>
+        <div class="phone-game-area">
+          <div class="game-hud">
+            <div class="hud-item">分数<br><strong>2,450</strong></div>
+            <div class="hud-item">金币<br><strong>128</strong></div>
+            <div class="hud-item">最高<br><strong>★6</strong></div>
+          </div>
+          <div class="game-board" id="gameBoard">
+            <div class="next-planet-indicator"></div>
+            <!-- Planets will be generated by JS -->
+          </div>
+          <div class="game-bottom">
+            <button class="btn btn-ad" onclick="showRevive()">📺 看广告复活</button>
+            <button class="btn btn-share" onclick="showShare()">📤 分享成绩</button>
+          </div>
+        </div>
+
+        <!-- Game over modal -->
+        <div class="modal hidden" id="gameOverModal">
+          <div class="modal-content">
+            <div class="modal-title">💥 游戏结束</div>
+            <div class="modal-stat">本局得分<strong>2,450</strong></div>
+            <div class="modal-stat">最高合成<strong>蓝巨星 ★6</strong></div>
+            <button class="modal-btn modal-btn-primary" onclick="watchAdReward()">
+              <span class="ad-icon">AD</span> 看广告复活 + 清除一排
+            </button>
+            <button class="modal-btn modal-btn-primary" onclick="watchAdBonus()">
+              <span class="ad-icon">AD</span> 看广告 → 金币 × 2
+            </button>
+            <button class="modal-btn modal-btn-secondary" onclick="closeModal()">再来一局</button>
+            <button class="modal-btn modal-btn-secondary" onclick="closeModal()">📤 分享战绩</button>
+          </div>
+        </div>
+
+        <!-- Share modal -->
+        <div class="modal hidden" id="shareModal">
+          <div class="modal-content">
+            <div class="modal-title">🏆 分享战绩</div>
+            <div class="modal-stat">"我在合成小星球合成了蓝巨星！"</div>
+            <button class="modal-btn modal-btn-primary" onclick="closeAllModals()">分享到微信</button>
+            <button class="modal-btn modal-btn-primary" onclick="closeAllModals()">分享到朋友圈</button>
+            <button class="modal-btn modal-btn-secondary" onclick="closeAllModals">保存图片</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-controls">
+      <button onclick="showGameOver()">模拟游戏结束</button>
+      <button onclick="showRevive()">模拟复活</button>
+      <button onclick="showShare()">分享截图</button>
+      <button onclick="resetDemo()">重置演示</button>
+    </div>
+
+    <h4>处理规则</h4>
+    <table>
+      <tr>
+        <th>规则项</th>
+        <th>行为</th>
+      </tr>
+      <tr>
+        <td>星球释放时机</td>
+        <td>用户点击后立即生成并下落，无法取消。新星球生成有 0.5 秒延迟保护，避免连续误触</td>
+      </tr>
+      <tr>
+        <td>星球生成等级</td>
+        <td>默认生成当前可触达等级范围的星球（1–3级）。可用道具解锁更高起始等级 [Assumption, TBD]</td>
+      </tr>
+      <tr>
+        <td>合成判定</td>
+        <td>两星球中心距离 ≤ 两星球半径之和 + 容差值时触发合成。合成动画 0.6 秒，期间暂停物理碰撞</td>
+      </tr>
+      <tr>
+        <td>连续合成</td>
+        <td>合成新星球后，如果新星球继续碰撞相同等级，可触发连锁合成，不额外加时间惩罚，连续合成获得 combo 加分</td>
+      </tr>
+      <tr>
+        <td>失败判定</td>
+        <td>任何星球顶部超过"失败线"并保持 3 秒 → 游戏结束。3 秒内下落回到安全区域则继续</td>
+      </tr>
+    </table>
+
+    <div class="divider">● ● ●</div>
+
+    <!-- FR-02: Retention & Growth -->
+    <h3 id="s4-2"><span class="req-id">FR-02</span> 持续留存与成长养成</h3>
+
+    <h4>目的</h4>
+    <p>给用户提供"每天回来"的理由，把一次性玩家转化为回访用户。</p>
+
+    <h4>功能清单</h4>
+
+    <h4><span class="tag tag-keep">每日签到</span></h4>
+    <ul>
+      <li>连续签到 1–7 天递增奖励：金币、起始等级加成、合成几率加成等</li>
+      <li>第 7 天固定奖励：随机道具包</li>
+      <li>断签重置连续天数，但基础签到仍可领取</li>
+      <li><span class="tag tag-ad">看广告</span>可加倍签到奖励</li>
+    </ul>
+
+    <h4><span class="tag tag-keep">星球图鉴</span></h4>
+    <ul>
+      <li>展示所有 10 种星球的 2D 卡片，未解锁的显示为剪影 + "???"</li>
+      <li>用户首次合成某星球时自动解锁图鉴，解锁时弹出庆祝动画</li>
+      <li>收集满 10 种星球 = 成就达成 → 可分享的"星球大师"海报</li>
+      <li>图鉴进度百分比常驻显示，提供长期目标</li>
+    </ul>
+
+    <h4><span class="tag tag-keep">金币与道具系统</span></h4>
+    <table>
+      <tr>
+        <th>道具名称</th>
+        <th>效果</th>
+        <th>获取方式</th>
+        <th>广告触发点</th>
+      </tr>
+      <tr>
+        <td>清除道具</td>
+        <td>清除游戏区中最低等级星球</td>
+        <td>签到奖励 / 看广告获取</td>
+        <td>游戏进行中弹出"清除危险星球"提示</td>
+      </tr>
+      <tr>
+        <td>冻结道具</td>
+        <td>5 秒内星球不移动、不坠落</td>
+        <td>签到奖励 / 看广告获取</td>
+        <td>即将触发失败线时推荐使用</td>
+      </tr>
+      <tr>
+        <td>升级道具</td>
+        <td>下次释放的星球等级 +2</td>
+        <td>看广告获取</td>
+        <td>手动触发 "看广告拿升级"</td>
+      </tr>
+      <tr>
+        <td>双球道具</td>
+        <td>一次释放两个相同星球</td>
+        <td>看广告获取</td>
+        <td>手动触发</td>
+      </tr>
+    </table>
+
+    <h4><span class="tag tag-p1">限时挑战模式</span>（P1）</h4>
+    <ul>
+      <li>每日 1 个挑战目标（如 "合成 ★5 熔岩星"、"一局获得 3000 分"）</li>
+      <li>完成挑战获得额外金币 + 可分享的成就徽章</li>
+      <li>周末特殊挑战：双倍奖励</li>
+    </ul>
+
+    <div class="divider">● ● ●</div>
+
+    <!-- FR-03: Rewarded Ads -->
+    <h3 id="s4-3"><span class="req-id">FR-03</span> 激励广告与奖励系统</h3>
+
+    <h4>目的</h4>
+    <p>把广告观看变成用户"想要做"的事，而非"被迫忍受"的事。关键是让广告触发时机<strong>刚好出现在用户想要得到某些东西的时候</strong>。</p>
+
+    <h4>核心原则</h4>
+    <ol>
+      <li><strong>用户主动触发</strong>：没有任何自动弹出、倒计时强制、假关闭按钮等</li>
+      <li><strong>明确告知</strong>：触发前清晰展示"广告时长 → 获得什么奖励"</li>
+      <li><strong>即时发放</strong>：广告播放完成后奖励立即到账，有视觉确认</li>
+      <li><strong>有限频率</strong>：单局内广告次数上限 [TBD]；两次广告间有 ≥ 60 秒冷却 [Assumption]</li>
+    </ol>
+
+    <h4>广告触发时机地图</h4>
+    <table>
+      <tr>
+        <th>时机 ID</th>
+        <th>触发场景</th>
+        <th>用户状态</th>
+        <th>用户看到的按钮文案</th>
+        <th>奖励内容</th>
+        <th>P0/P1</th>
+      </tr>
+      <tr>
+        <td>AD-01</td>
+        <td>游戏结束弹窗中</td>
+        <td>挫败感、想继续</td>
+        <td>"📺 看广告复活 + 清除一排"</td>
+        <td>复活 + 清除底部一排最低等级星球</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>AD-02</td>
+        <td>游戏结束弹窗中</td>
+        <td>想最大化收益</td>
+        <td>"📺 看广告 → 金币 × 2"</td>
+        <td>本局金币奖励翻倍</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>AD-03</td>
+        <td>游戏进行中，距离失败线近但未输</td>
+        <td>紧张、想救命</td>
+        <td>"📺 看广告用清除道具"</td>
+        <td>立即清除底部一排星球</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>AD-04</td>
+        <td>主界面 / 游戏进行中</td>
+        <td>主动想赚金币</td>
+        <td>"📺 看广告 +50 金币"</td>
+        <td>直接获得 50 金币</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>AD-05</td>
+        <td>连续 3 次合成相同等级后弹出</td>
+        <td>成就感、想加速</td>
+        <td>"📺 广告 → 下次生成 ★3"</td>
+        <td>下一个释放星球固定为高等级</td>
+        <td><span class="tag tag-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>AD-06</td>
+        <td>签到界面</td>
+        <td>想最大化签到收益</td>
+        <td>"📺 看广告 → 奖励翻倍"</td>
+        <td>签到金币翻倍</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+    </table>
+
+    <h4>广告播放器规则</h4>
+    <table>
+      <tr>
+        <th>项目</th>
+        <th>规则</th>
+      </tr>
+      <tr>
+        <td>广告类型</td>
+        <td>激励视频广告（Rewarded Video）。横幅、插屏广告 <strong>不纳入 P0</strong> [Assumption]</td>
+      </tr>
+      <tr>
+        <td>广告时长</td>
+        <td>通常 15–30 秒，用户需完整观看才能获得奖励</td>
+      </tr>
+      <tr>
+        <td>中途退出</td>
+        <td>广告播放 < 50% 时关闭 → 不给奖励，弹窗提示"完整观看才能获得奖励"</td>
+      </tr>
+      <tr>
+        <td>加载失败</td>
+        <td>提示"广告暂时不可用，请稍后再试"，按钮变灰禁用 10 秒后恢复</td>
+      </tr>
+      <tr>
+        <td>重复触发</td>
+        <td>两次广告间强制冷却 60 秒（游戏内计时），防止高频刷广告</td>
+      </tr>
+      <tr>
+        <td>每日上限</td>
+        <td>单用户每日广告观看上限 [TBD，建议 8–12 次/天]</td>
+      </tr>
+      <tr>
+        <td>奖励发放时机</td>
+        <td>广告播放结束后立即发放，有明确的 "+金币" / "道具获得" 动画反馈</td>
+      </tr>
+    </table>
+
+    <div class="note note-assumption">
+      <p><strong>[Assumption, TBD]</strong> 广告 SDK 接入哪家（微信广告、穿山甲、Unity Ads、IronSource 等）、eCPM 单价、每日填充率等关键数据待运营确认。本文测算暂以行业休闲游戏激励广告 eCPM ≈ $8–15（人民币 55–100 元）为假设区间。</p>
+    </div>
+
+    <div class="divider">● ● ●</div>
+
+    <!-- FR-04: Share -->
+    <h3 id="s4-4"><span class="req-id">FR-04</span> 分享传播与邀请</h3>
+
+    <h4>目的</h4>
+    <p>让用户"想要分享"，而不是"被要求分享"。分享应该成为炫耀、求助、娱乐的自发行为。</p>
+
+    <h4>核心原则</h4>
+    <ol>
+      <li><strong>不强制分享</strong>：任何场景下分享都不是解锁内容的前提条件</li>
+      <li><strong>分享有回报</strong>：被分享者和分享者都能获得好处</li>
+      <li><strong>一键操作</strong>：简化分享流程，减少操作环节</li>
+    </ol>
+
+    <h4>分享场景与触发</h4>
+    <table>
+      <tr>
+        <th>场景</th>
+        <th>时机</th>
+        <th>分享内容</th>
+        <th>分享动力</th>
+        <th>P0/P1</th>
+      </tr>
+      <tr>
+        <td>成绩炫耀</td>
+        <td>游戏结束时</td>
+        <td>战绩海报（合成到最高星球 + 分数）+ 小游戏入口链接</td>
+        <td>"我合成了红巨星！你能合成什么？"</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>图鉴解锁</td>
+        <td>首次解锁新星球时</td>
+        <td>星球卡片 + 解锁提示 + 小游戏链接</td>
+        <td>"看看我新发现的星球！"</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>求助邀请</td>
+        <td>游戏进行中即将失败</td>
+        <td>"帮我看广告清除一排" → 好友点击后，分享者获得一次清除道具</td>
+        <td>"兄弟救我一把！" [Assumption]</td>
+        <td><span class="tag tag-p1">P1</span></td>
+      </tr>
+      <tr>
+        <td>每日任务</td>
+        <td>挑战完成后</td>
+        <td>成就徽章 + 小游戏链接</td>
+        <td>"每日挑战达成！"</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+      <tr>
+        <td>终极目标</td>
+        <td>合成终极星时</td>
+        <td>专属庆祝动画 + 全图鉴海报</td>
+        <td>"我达成了终极成就！"</td>
+        <td><span class="tag tag-p0">P0</span></td>
+      </tr>
+    </table>
+
+    <h4>分享后奖励规则</h4>
+    <ul>
+      <li>好友点击分享链接进入游戏 → 新用户注册，分享者获得 100 金币奖励</li>
+      <li>好友完成首次合成高等级星球 → 分享者额外获得道具包奖励</li>
+      <li>奖励每日结算上限 [TBD，建议 300 金币/天]</li>
+    </ul>
+
+    <div class="divider">● ● ●</div>
+
+    <!-- FR-05: Game Over & Revive -->
+    <h3 id="s4-5"><span class="req-id">FR-05</span> 游戏结束与复活流程</h3>
+
+    <h4>游戏结束触发</h4>
+    <ol>
+      <li>失败线检测 → 星球超限保持 3 秒 → 触发游戏结束动画（画面抖动 + 红色警告）</li>
+      <li>分数锁定、合成等级锁定</li>
+      <li>游戏结束弹窗出现，显示本局数据</li>
+    </ol>
+
+    <h4>游戏结束弹窗内容</h4>
+    <div class="modal-content" style="position:relative;display:block;margin:0 auto;width:auto;max-width:400px;">
+      <div class="modal-title">💥 游戏结束</div>
+      <div class="modal-stat">本局得分<strong style="font-size:28px;color:var(--accent);">2,450</strong></div>
+      <div class="modal-stat">最高合成<strong>蓝巨星 ★6</strong></div>
+      <div class="modal-stat">获得金币<strong>+128</strong></div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid #E5E7EB;">
+        <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">选择一个奖励方式：</p>
+        <button class="modal-btn modal-btn-primary">
+          <span class="ad-icon">AD</span> 看广告复活 + 清除一排
+        </button>
+        <button class="modal-btn modal-btn-primary">
+          <span class="ad-icon">AD</span> 看广告 → 金币 × 2
+        </button>
+        <button class="modal-btn modal-btn-secondary">再来一局</button>
+        <button class="modal-btn modal-btn-secondary">📤 分享战绩</button>
+      </div>
+    </div>
+
+    <h4>复活规则</h4>
+    <table>
+      <tr>
+        <th>项目</th>
+        <th>规则</th>
+      </tr>
+      <tr>
+        <td>复活可用次数</td>
+        <td>每局游戏最多 1 次复活 [Assumption]</td>
+      </tr>
+      <tr>
+        <td>复活后的效果</td>
+        <td>清除底部一排最低等级星球 + 失败线保护恢复到 5 秒（给玩家缓冲）</td>
+      </tr>
+      <tr>
+        <td>复活前的分数</td>
+        <td>复活后沿用复活前的分数，不是清零重来</td>
+      </tr>
+      <tr>
+        <td>是否强制复活</td>
+        <td>完全不强制，用户可直接选"再来一局"</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Section 5: Shared Rules -->
+  <div class="section" id="s5">
+    <h2><span class="num">5</span> 共享规则</h2>
+
+    <h3>金币与道具的跨模块规则</h3>
+    <table>
+      <tr>
+        <th>规则</th>
+        <th>说明</th>
+      </tr>
+      <tr>
+        <td>金币获取路径</td>
+        <td>游戏结算 / 签到 / 分享邀请奖励 / 广告直接获取</td>
+      </tr>
+      <tr>
+        <td>金币消费路径</td>
+        <td>看广告拿金币（无消费）、使用道具（消耗）[Assumption, TBD 是否允许金币购买道具]</td>
+      </tr>
+      <tr>
+        <td>金币上限</td>
+        <td>[Assumption, TBD 建议 9999]</td>
+      </tr>
+      <tr>
+        <td>金币过期</td>
+        <td>永不过期，不做清零机制</td>
+      </tr>
+      <tr>
+        <td>道具持有上限</td>
+        <td>每种道具最多持有 5 个 [Assumption]</td>
+      </tr>
+    </table>
+
+    <h3>广告冷却与限流规则</h3>
+    <ul>
+      <li>两次广告间强制 ≥ 60 秒冷却（游戏进行中的活动时间）</li>
+      <li>单局游戏广告观看上限：复活 1 次 + 本局内主动触发广告 ≤ 2 次</li>
+      <li>每日全量广告观看上限：[TBD]</li>
+      <li>同一广告触发点在同一局游戏内最多出现 1 次</li>
+    </ul>
+
+    <h3>异常与边界处理</h3>
+    <table>
+      <tr>
+        <th>场景</th>
+        <th>处理方式</th>
+      </tr>
+      <tr>
+        <td>广告加载失败</td>
+        <td>按钮变灰禁用 10 秒，10 秒后自动重试一次；仍失败则展示"稍后再试"</td>
+      </tr>
+      <tr>
+        <td>广告播放中断（网络差 / App 退回后台）</td>
+        <td>中断 < 50% → 不给奖励 + 提示；中断 ≥ 50% → 仍发放奖励（避免用户流失）</td>
+      </tr>
+      <tr>
+        <td>复活后游戏立刻再次失败</td>
+        <td>正常触发游戏结束弹窗，不再给复活选项（一局一次）</td>
+      </tr>
+      <tr>
+        <td>连续签到被打断</td>
+        <td>连续天数重置为 0，当日基础签到仍可领取</td>
+      </tr>
+      <tr>
+        <td>用户删除重装</td>
+        <td>本地缓存丢失；如接入账号系统则云端恢复进度 [P1 功能]</td>
+      </tr>
+      <tr>
+        <td>合成至终极星（★10）</td>
+        <td>触发史诗动画 + "星球大师"称号 + 解锁专属皮肤 + 分享提示</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Section 6: Metrics & Revenue -->
+  <div class="section" id="s6">
+    <h2><span class="num">6</span> 商业化验证指标与收益测算</h2>
+
+    <h3>核心指标定义</h3>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-name">新增用户 (DAU 来源)</div>
+        <div class="metric-value">[TBD]</div>
+        <div class="metric-note">自然量 + 分享带来</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">次日留存</div>
+        <div class="metric-value">≥ 25%</div>
+        <div class="metric-note">P0 目标值</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">7 日留存</div>
+        <div class="metric-value">≥ 10%</div>
+        <div class="metric-note">P0 目标值</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">人均游玩时长</div>
+        <div class="metric-value">≥ 12 min/天</div>
+        <div class="metric-note">P0 目标值</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">激励广告参与率</div>
+        <div class="metric-value">≥ 40%</div>
+        <div class="metric-note">游戏结束时选择看广告</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">广告完成率</div>
+        <div class="metric-value">≥ 85%</div>
+        <div class="metric-note">点击广告后完整观看</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">人均广告观看</div>
+        <div class="metric-value">≥ 2 次/天</div>
+        <div class="metric-note">DAU 内平均</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-name">分享率</div>
+        <div class="metric-value">≥ 15%</div>
+        <div class="metric-note">游戏结束时选择分享</div>
+      </div>
+    </div>
+
+    <h3>收益测算（假设场景）</h3>
+    <div class="estimate-box">
+      <h4>测算假设</h4>
+      <ul>
+        <li>eCPM ≈ 80 元/千次观看（国内激励视频广告中位水平） [Assumption, TBD]</li>
+        <li>DAU = 10,000（种子用户期）</li>
+        <li>人均广告观看 = 2.5 次/天</li>
+        <li>广告填充率 = 85%</li>
+        <li>次月 DAU = 50,000（增长期）</li>
+      </ul>
+      <div class="estimate-row">
+        <span>单次广告观看收益（净）</span>
+        <span>0.08 元/次（eCPM 80 ÷ 1000）</span>
+      </div>
+      <div class="estimate-row">
+        <span>DAU = 10k 时 · 日均收益</span>
+        <span>10,000 × 2.5 × 0.08 × 0.85 = <strong>1,700 元/天</strong></span>
+      </div>
+      <div class="estimate-row">
+        <span>DAU = 10k 时 · 月均收益（30 天）</span>
+        <span>= <strong>51,000 元/月</strong></span>
+      </div>
+      <div class="estimate-row">
+        <span>DAU = 50k 时 · 月均收益（30 天）</span>
+        <span>= <strong>255,000 元/月</strong></span>
+      </div>
+    </div>
+
+    <div class="note note-assumption">
+      <p><strong>数据来源说明：</strong></p>
+      <ul style="margin-bottom:0;">
+        <li>eCPM 数据来自 <strong>[TBD]</strong> 广告平台 2025 Q4 休闲游戏品类激励视频广告中位 eCPM；</li>
+        <li>留存、人均时长等指标为<strong>假设目标值</strong>，待上线后实测；</li>
+        <li>收益测算未扣除平台分成（微信小游戏平台抽成比例 [TBD]），实际收入需按平台规则调整。</li>
+      </ul>
+    </div>
+
+    <h3>验证方法</h3>
+    <ol>
+      <li><strong>进入 → 体验</strong>：监测 "进入首页 → 首次合成" 的转化漏斗，判断玩法是否易上手</li>
+      <li><strong>体验 → 留存</strong>：DAU/MAU 比例、次日/7日留存、日均游玩时长</li>
+      <li><strong>留存 → 广告</strong>：广告参与率（游戏结束时选择看广告的比例）、广告完成率、人均广告观看次数</li>
+      <li><strong>广告 → 收益</strong>：eCPM、人均广告收益（ARPU-ad）、每日广告总收入</li>
+      <li><strong>收益 → 传播</strong>：分享率、分享带来的新用户占比、新用户次日留存</li>
+    </ol>
+  </div>
+
+  <!-- Section 7: Open Questions -->
+  <div class="section" id="s7">
+    <h2><span class="num">7</span> 开放问题</h2>
+
+    <div class="note note-tbd">
+      <p><strong>以下问题在当前阶段尚未决策，将影响最终实现路径，需与相关方确认：</strong></p>
+      <ol>
+        <li><strong>广告 SDK 选择：</strong>接入哪家广告平台？（微信广告 / 穿山甲 / Unity Ads / IronSource）不同平台的 eCPM、填充率、分成比例差异显著</li>
+        <li><strong>平台选择：</strong>首发微信小游戏还是多平台同步？（微信 / 抖音 / H5 / APP）不同平台的用户群体和规则差异大</li>
+        <li><strong>道具货币化边界：</strong>是否允许金币购买道具？还是金币仅用于看广告"兑换"体验？</li>
+        <li><strong>每日广告观看上限：</strong>建议 8–12 次，但具体数值需根据平台要求和用户体验测试确定</li>
+        <li><strong>终极星（★10）得分：</strong>需结合实际玩法平衡性测试后确定</li>
+        <li><strong>账号系统：</strong>P0 是否需要接入微信授权登录？还是允许游客身份游玩？</li>
+        <li><strong>付费内购规划：</strong>长期是否考虑去掉广告的 "免广告版" 或 VIP 订阅？</li>
+        <li><strong>美术风格：</strong>星球视觉风格是走"可爱 Q 版"、"写实太空"还是"极简几何"？</li>
+      </ol>
+    </div>
+  </div>
+
+  <div style="text-align:center;color:var(--text-muted);font-size:13px;padding:40px 0;">
+    — 合成小星球 · PRD v1.0 · 文档结束 —
+  </div>
+
+</div>
+
+<script>
+  // Generate demo planets
+  function generatePlanets() {
+    const board = document.getElementById('gameBoard');
+    board.innerHTML = '';
+
+    // Add a next planet indicator
+    const indicator = document.createElement('div');
+    indicator.className = 'next-planet-indicator';
+    indicator.style.top = '40px';
+    board.appendChild(indicator);
+
+    // Add demo planets
+    const planets = [
+      { cls: 'planet-1', left: '20px', top: '380px' },
+      { cls: 'planet-2', left: '45px', top: '400px' },
+      { cls: 'planet-3', left: '80px', top: '360px' },
+      { cls: 'planet-4', left: '150px', top: '370px' },
+      { cls: 'planet-1', left: '240px', top: '420px' },
+      { cls: 'planet-2', left: '260px', top: '395px' },
+      { cls: 'planet-1', left: '10px', top: '440px' },
+      { cls: 'planet-1', left: '280px', top: '440px' },
+      { cls: 'planet-5', left: '160px', top: '430px' },
+    ];
+
+    planets.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'planet ' + p.cls;
+      el.style.left = p.left;
+      el.style.top = p.top;
+      board.appendChild(el);
+    });
+  }
+
+  function showGameOver() {
+    document.getElementById('gameOverModal').classList.remove('hidden');
+  }
+
+  function showRevive() {
+    document.getElementById('gameOverModal').classList.add('hidden');
+    alert('🎬 正在加载广告...\n\n✨ 广告播放完成！\n\n🎁 奖励已发放：清除一排 + 复活！');
+    setTimeout(() => {
+      generatePlanets();
+    }, 500);
+  }
+
+  function showShare() {
+    document.getElementById('shareModal').classList.remove('hidden');
+  }
+
+  function watchAdReward() {
+    alert('🎬 正在加载广告...\n\n✨ 广告播放完成！\n\n🎁 奖励已发放：清除一排 + 复活！');
+    closeAllModals();
+  }
+
+  function watchAdBonus() {
+    alert('🎬 正在加载广告...\n\n✨ 广告播放完成！\n\n🎁 金币已翻倍：+128 × 2 = +256 金币！');
+    closeAllModals();
+  }
+
+  function closeModal() {
+    document.getElementById('gameOverModal').classList.add('hidden');
+  }
+
+  function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+  }
+
+  function resetDemo() {
+    closeAllModals();
+    generatePlanets();
+  }
+
+  // Initial render
+  generatePlanets();
+</script>
+</body>
+</html>
